@@ -44,43 +44,29 @@ const iconMap = {
 // Sidebar Header Component
 function SidebarHeader({ collapsed }) {
   return React.createElement(mui.Box, {
-    className: 'sidebar-header',
-    sx: {
-      padding: '16px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.18)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      minHeight: '64px',
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
-    }
+    className: 'sidebar-header'
   },
     !collapsed ? (
       React.createElement(mui.Box, {
-        className: 'sidebar-logo-container',
-        sx: { display: 'flex', alignItems: 'center', justifyContent: 'center' }
+        className: 'sidebar-logo-container'
       },
         React.createElement('img', {
           src: '/logo.png',
           alt: 'Shiny AI Gate Logo',
-          className: 'sidebar-logo',
-          style: { height: '28px', width: 'auto', objectFit: 'contain' }
+          className: 'sidebar-logo'
         })
       )
     ) : (
       React.createElement(mui.Box, {
-        className: 'sidebar-title-icon',
-        sx: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '100%' }
+        className: 'sidebar-title-icon'
       },
         React.createElement(mui.Box, {
-          className: 'sidebar-logo-small',
-          sx: { display: 'flex', alignItems: 'center', justifyContent: 'center' }
+          className: 'sidebar-logo-small'
         },
           React.createElement('img', {
             src: '/logo.svg',
             alt: 'Logo',
-            className: 'sidebar-logo-collapsed',
-            style: { height: '32px', width: 'auto', objectFit: 'contain' }
+            className: 'sidebar-logo-collapsed'
           })
         )
       )
@@ -102,77 +88,36 @@ function SidebarMenu({ selectedItem, onMenuItemClick, collapsed }) {
   };
 
   return React.createElement(mui.Box, {
-    className: `sidebar-menu-container ${collapsed ? 'collapsed' : ''}`,
-    sx: {
-      flex: 1,
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: collapsed ? 'center' : 'flex-start',
-      padding: '16px 0'
-    }
+    className: `sidebar-menu-container ${collapsed ? 'collapsed' : ''}`
   },
     React.createElement(mui.List, {
-      className: 'menu-list',
-      sx: { padding: 0 }
+      className: 'menu-list'
     },
       menuItems.map((item) => 
         React.createElement(mui.ListItem, {
           key: item.id,
           disablePadding: true,
-          className: `menu-item ${collapsed ? 'collapsed' : ''}`,
-          sx: { margin: collapsed ? '0' : '0 8px', borderRadius: '4px', minHeight: '48px' }
+          className: `menu-item ${collapsed ? 'collapsed' : ''}`
         },
           React.createElement(mui.Tooltip, {
             title: collapsed ? item.text : '',
             placement: 'right',
             arrow: true,
-            disableHoverListener: !collapsed,
-            componentsProps: {
-              tooltip: {
-                sx: {
-                  backgroundColor: 'white',
-                  color: 'black',
-                  fontSize: '14px',
-                  padding: '8px 12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  border: '1px solid #e0e0e0',
-                  '& .MuiTooltip-arrow': {
-                    color: 'white',
-                    borderColor: '#e0e0e0'
-                  }
-                }
-              }
-            }
+            disableHoverListener: !collapsed
           },
             React.createElement(mui.ListItemButton, {
               className: `menu-item-button ${selectedItem === item.id ? 'selected' : ''} ${collapsed ? 'collapsed' : ''}`,
-              onClick: () => handleItemClick(item),
-              sx: {
-                padding: collapsed ? '12px 0' : '12px 16px 12px 8px',
-                minHeight: '30px',
-                borderRadius: '4px',
-                margin: collapsed ? '0' : '0 8px 4px 8px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                transition: 'all 0.3s ease'
-              }
+              onClick: () => handleItemClick(item)
             },
               React.createElement(mui.ListItemIcon, {
-                className: `menu-icon ${collapsed ? 'collapsed' : ''}`,
-        sx: { 
-          minWidth: collapsed ? 'auto' : '36px',
-          color: 'inherit',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: collapsed ? 'center' : 'flex-start'
-        }
+                className: `menu-icon ${collapsed ? 'collapsed' : ''}`
               },
                 getIcon(item.icon)
               ),
               
               !collapsed && React.createElement(mui.ListItemText, {
                 primary: React.createElement(mui.Typography, {
-                  className: 'menu-text',
-                  sx: { fontWeight: '400', fontSize: '0.875rem', color: 'black' }
+                  className: 'menu-text'
                 }, item.text)
               })
             )
@@ -233,19 +178,7 @@ function SidebarFooter({ collapsed, user, onLogout }) {
       return React.createElement(icons[iconMap[iconName]]);
     } else if (iconName === 'Person' && avatar) {
       return React.createElement(mui.Box, {
-        className: 'sidebar-user-avatar',
-        sx: {
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          backgroundColor: '#1976d2',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }
+        className: 'sidebar-user-avatar'
       }, avatar);
     }
     return React.createElement(icons[iconMap[iconName]] || icons.Person);
@@ -256,26 +189,14 @@ function SidebarFooter({ collapsed, user, onLogout }) {
       return React.createElement(mui.ListItem, {
         key: item.id,
         disablePadding: true,
-        className: 'menu-item',
-        sx: { margin: collapsed ? '0' : '0 8px' }
+        className: 'menu-item'
       },
         React.createElement(mui.ListItemButton, {
           className: `menu-item-button footer-item`,
-          onClick: handleUserMenuOpen,
-          sx: {
-            minHeight: '40px',
-            borderRadius: '0',
-            justifyContent: collapsed ? 'center' : 'flex-start'
-          }
+          onClick: handleUserMenuOpen
         },
           React.createElement(mui.ListItemIcon, {
-            className: 'menu-icon',
-            sx: { 
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start'
-            }
+            className: 'menu-icon'
           },
             getFooterIcon(item.icon, item.avatar)
           ),
@@ -286,8 +207,7 @@ function SidebarFooter({ collapsed, user, onLogout }) {
             }, item.text),
             secondary: item.subText && React.createElement(mui.Typography, {
               variant: 'caption',
-              className: 'sidebar-user-role',
-              sx: { color: 'black', fontSize: '12px' }
+              className: 'sidebar-user-role'
             }, item.subText)
           })
         )
@@ -297,8 +217,7 @@ function SidebarFooter({ collapsed, user, onLogout }) {
     return React.createElement(mui.ListItem, {
       key: item.id,
       disablePadding: true,
-      className: 'menu-item',
-      sx: { margin: collapsed ? '0' : '0 8px' }
+      className: 'menu-item'
     },
       React.createElement(mui.Tooltip, {
         title: collapsed ? item.text : '',
@@ -308,35 +227,16 @@ function SidebarFooter({ collapsed, user, onLogout }) {
       },
         React.createElement(mui.ListItemButton, {
           className: `menu-item-button footer-item`,
-          onClick: () => item.id === 'notifications' && console.log('点击了通知'),
-          sx: {
-            minHeight: '40px',
-            borderRadius: '0',
-            justifyContent: collapsed ? 'center' : 'flex-start'
-          }
+          onClick: () => item.id === 'notifications' && console.log('点击了通知')
         },
           React.createElement(mui.ListItemIcon, {
-            className: 'menu-icon',
-            sx: { 
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start'
-            }
+            className: 'menu-icon'
           },
             item.id === 'notifications' ? (
               React.createElement(mui.Badge, {
                 badgeContent: item.badge,
                 color: 'error',
-                invisible: !item.badge,
-                sx: {
-                  '& .MuiBadge-badge': {
-                    fontSize: '10px',
-                    height: '16px',
-                    minWidth: '16px',
-                    padding: '0 4px'
-                  }
-                }
+                invisible: !item.badge
               },
                 getFooterIcon(item.icon, item.avatar)
               )
@@ -356,13 +256,7 @@ function SidebarFooter({ collapsed, user, onLogout }) {
   };
 
   return React.createElement(mui.Box, {
-    className: `sidebar-footer ${collapsed ? 'collapsed' : ''}`,
-    sx: {
-      borderTop: '1px solid rgba(255, 255, 255, 0.18)',
-      overflow: 'hidden',
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%)',
-      padding: collapsed ? '8px 0' : '8px 16px'
-    }
+    className: `sidebar-footer ${collapsed ? 'collapsed' : ''}`
   },
     footerItems.map(item => renderFooterItem(item)),
 
@@ -372,50 +266,39 @@ function SidebarFooter({ collapsed, user, onLogout }) {
       open: Boolean(userMenuAnchor),
       onClose: handleUserMenuClose,
       anchorOrigin: { vertical: 'top', horizontal: 'right' },
-      transformOrigin: { vertical: 'top', horizontal: 'left' },
-      PaperProps: {
-        sx: {
-          mt: 1,
-          minWidth: 140,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          borderRadius: 1
-        }
-      }
+      transformOrigin: { vertical: 'top', horizontal: 'left' }
     },
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统信息'); }, sx: { py: 0.5 } },
-        React.createElement(mui.ListItemIcon, { sx: { minWidth: 28 } },
+      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统信息'); } },
+        React.createElement(mui.ListItemIcon, {},
           React.createElement(icons.Settings, { fontSize: 'small' })
         ),
-        React.createElement(mui.ListItemText, { primary: '系统信息', primaryTypographyProps: { fontSize: '0.8rem' } })
+        React.createElement(mui.ListItemText, { primary: '系统信息' })
       ),
       React.createElement(mui.Divider),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('文档'); }, sx: { py: 0.5 } },
-        React.createElement(mui.ListItemIcon, { sx: { minWidth: 28 } },
+      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('文档'); } },
+        React.createElement(mui.ListItemIcon, {},
           React.createElement(icons.Description, { fontSize: 'small' })
         ),
-        React.createElement(mui.ListItemText, { primary: '文档', primaryTypographyProps: { fontSize: '0.8rem' } })
+        React.createElement(mui.ListItemText, { primary: '文档' })
       ),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统设置'); }, sx: { py: 0.5 } },
-        React.createElement(mui.ListItemIcon, { sx: { minWidth: 28 } },
+      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统设置'); } },
+        React.createElement(mui.ListItemIcon, {},
           React.createElement(icons.AdminPanelSettings, { fontSize: 'small' })
         ),
-        React.createElement(mui.ListItemText, { primary: '系统设置', primaryTypographyProps: { fontSize: '0.8rem' } })
+        React.createElement(mui.ListItemText, { primary: '系统设置' })
       ),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('修改密码'); }, sx: { py: 0.5 } },
-        React.createElement(mui.ListItemIcon, { sx: { minWidth: 28 } },
+      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('修改密码'); } },
+        React.createElement(mui.ListItemIcon, {},
           React.createElement(icons.Lock, { fontSize: 'small' })
         ),
-        React.createElement(mui.ListItemText, { primary: '修改密码', primaryTypographyProps: { fontSize: '0.8rem' } })
+        React.createElement(mui.ListItemText, { primary: '修改密码' })
       ),
       React.createElement(mui.Divider),
-      React.createElement(mui.MenuItem, { onClick: handleLogoutClick, sx: { py: 0.5 } },
-        React.createElement(mui.ListItemIcon, { sx: { minWidth: 28 } },
-          React.createElement(icons.Logout, { fontSize: 'small', sx: { color: 'error.main' } })
+      React.createElement(mui.MenuItem, { onClick: handleLogoutClick },
+        React.createElement(mui.ListItemIcon, {},
+          React.createElement(icons.Logout, { fontSize: 'small' })
         ),
-        React.createElement(mui.ListItemText, { 
-          primary: '退出登录', 
-          primaryTypographyProps: { fontSize: '0.8rem', color: 'error.main' } 
-        })
+        React.createElement(mui.ListItemText, { primary: '退出登录' })
       )
     ),
 
@@ -424,30 +307,25 @@ function SidebarFooter({ collapsed, user, onLogout }) {
       open: logoutDialogOpen,
       onClose: handleLogoutCancel,
       'aria-labelledby': 'logout-dialog-title',
-      'aria-describedby': 'logout-dialog-description',
-      PaperProps: {
-        sx: { borderRadius: 2, minWidth: 400 }
-      }
+      'aria-describedby': 'logout-dialog-description'
     },
-      React.createElement(mui.DialogTitle, { id: 'logout-dialog-title', sx: { pb: 1 } },
+      React.createElement(mui.DialogTitle, { id: 'logout-dialog-title' },
         '确认退出登录'
       ),
-      React.createElement(mui.DialogContent, { sx: { pb: 2 } },
+      React.createElement(mui.DialogContent, {},
         React.createElement(mui.DialogContentText, { id: 'logout-dialog-description' },
           '您确定要退出登录吗？退出后需要重新登录才能访问系统。'
         )
       ),
-      React.createElement(mui.DialogActions, { sx: { px: 3, pb: 2 } },
+      React.createElement(mui.DialogActions, {},
         React.createElement(mui.Button, {
           onClick: handleLogoutCancel,
-          variant: 'outlined',
-          sx: { minWidth: 80 }
+          variant: 'outlined'
         }, '取消'),
         React.createElement(mui.Button, {
           onClick: handleLogoutConfirm,
           variant: 'contained',
-          color: 'error',
-          sx: { minWidth: 80 }
+          color: 'error'
         }, '确认退出')
       )
     )
@@ -457,37 +335,16 @@ function SidebarFooter({ collapsed, user, onLogout }) {
 // Collapse Control Component
 function SidebarCollapseControl({ collapsed, onToggle }) {
   return React.createElement(mui.Box, {
-    className: 'sidebar-collapse-control',
-    sx: {
-      padding: '8px 0',
-      borderTop: '1px solid rgba(255, 255, 255, 0.18)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)'
-    }
+    className: 'sidebar-collapse-control'
   },
     React.createElement(mui.IconButton, {
       onClick: onToggle,
       className: 'sidebar-collapse-control-btn',
       size: 'small',
-      title: collapsed ? "展开侧边栏" : "收缩侧边栏",
-      sx: {
-        color: 'rgba(0, 0, 0, 0.7)',
-        transition: 'all 0.3s ease',
-        width: '32px',
-        height: '32px',
-        background: 'rgba(255, 255, 255, 0.2)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: collapsed ? '50%' : '8px'
-      }
+      title: collapsed ? "展开侧边栏" : "收缩侧边栏"
     },
       React.createElement(icons.ChevronLeft, {
-        sx: {
-          transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.2s ease'
-        }
+        className: collapsed ? 'expanded' : 'collapsed'
       })
     )
   );
@@ -499,12 +356,7 @@ function Sidebar({ open, onClose, selectedMenuItem, onMenuItemClick, drawerWidth
   const isMobile = mui.useMediaQuery(theme.breakpoints.down('md'));
 
   const drawer = React.createElement(mui.Box, {
-    className: 'sidebar-drawer-content',
-    sx: {
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column'
-    }
+    className: 'sidebar-drawer-content'
   },
     // Header
     React.createElement(SidebarHeader, { collapsed }),
@@ -532,26 +384,14 @@ function Sidebar({ open, onClose, selectedMenuItem, onMenuItemClick, drawerWidth
 
   return React.createElement(mui.Box, {
     component: 'nav',
-    className: 'sidebar-container',
-    sx: { width: { sm: drawerWidth }, flexShrink: { sm: 0 } }
+    className: 'sidebar-container'
   },
     React.createElement(mui.Drawer, {
       variant: isMobile ? "temporary" : "permanent",
       open: open,
       onClose: onClose,
       ModalProps: { keepMounted: true },
-      className: 'sidebar-drawer',
-      sx: {
-        '& .MuiDrawer-paper': { 
-          boxSizing: 'border-box', 
-          width: drawerWidth,
-          background: 'rgba(255, 255, 255, 0.25)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.18)',
-          boxShadow: '0 8px 32px rgba(31, 38, 135, 0.37), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-          color: 'rgba(0, 0, 0, 0.87)'
-        }
-      }
+      className: 'sidebar-drawer'
     },
       drawer
     )
@@ -561,22 +401,11 @@ function Sidebar({ open, onClose, selectedMenuItem, onMenuItemClick, drawerWidth
 // Main Content Component
 function MainContent() {
   return React.createElement(mui.Box, {
-    sx: {
-      flexGrow: 1,
-      p: 3,
-      bgcolor: 'background.default',
-      minHeight: '100vh',
-      paddingTop: '80px' // Space for fixed AppBar
-    }
+    className: 'main-content'
   },
     // Header
     React.createElement(mui.Box, {
-      sx: {
-        mb: 4,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }
+      className: 'content-header'
     },
       React.createElement(mui.Typography, { variant: 'h4' },
         '仪表板概览'
@@ -588,17 +417,13 @@ function MainContent() {
     ),
     
     // Stats Cards
-    React.createElement(mui.Grid, { container: true, spacing: 3 },
+    React.createElement(mui.Grid, { container: true, spacing: 3, className: 'stats-grid' },
       // Card 1
       React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'stat-card' },
           React.createElement(mui.CardContent, {},
             React.createElement(mui.Box, {
-              sx: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }
+              className: 'stat-card-content'
             },
               React.createElement(mui.Box, {},
                 React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
@@ -607,7 +432,7 @@ function MainContent() {
                 React.createElement(mui.Typography, { variant: 'h4' }, '1,234')
               ),
               React.createElement(mui.Avatar, {
-                sx: { bgcolor: 'primary.main', width: 56, height: 56 }
+                className: 'stat-avatar primary'
               },
                 React.createElement(icons.People, {})
               )
@@ -618,14 +443,10 @@ function MainContent() {
       
       // Card 2
       React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'stat-card' },
           React.createElement(mui.CardContent, {},
             React.createElement(mui.Box, {
-              sx: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }
+              className: 'stat-card-content'
             },
               React.createElement(mui.Box, {},
                 React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
@@ -634,7 +455,7 @@ function MainContent() {
                 React.createElement(mui.Typography, { variant: 'h4' }, '¥12,345')
               ),
               React.createElement(mui.Avatar, {
-                sx: { bgcolor: 'success.main', width: 56, height: 56 }
+                className: 'stat-avatar success'
               },
                 React.createElement(icons.TrendingUp, {})
               )
@@ -645,14 +466,10 @@ function MainContent() {
       
       // Card 3
       React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'stat-card' },
           React.createElement(mui.CardContent, {},
             React.createElement(mui.Box, {
-              sx: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }
+              className: 'stat-card-content'
             },
               React.createElement(mui.Box, {},
                 React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
@@ -661,7 +478,7 @@ function MainContent() {
                 React.createElement(mui.Typography, { variant: 'h4' }, '567')
               ),
               React.createElement(mui.Avatar, {
-                sx: { bgcolor: 'info.main', width: 56, height: 56 }
+                className: 'stat-avatar info'
               },
                 React.createElement(icons.ShoppingCart, {})
               )
@@ -672,14 +489,10 @@ function MainContent() {
       
       // Card 4
       React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'stat-card' },
           React.createElement(mui.CardContent, {},
             React.createElement(mui.Box, {
-              sx: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }
+              className: 'stat-card-content'
             },
               React.createElement(mui.Box, {},
                 React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
@@ -688,7 +501,7 @@ function MainContent() {
                 React.createElement(mui.Typography, { variant: 'h4' }, '3.2%')
               ),
               React.createElement(mui.Avatar, {
-                sx: { bgcolor: 'warning.main', width: 56, height: 56 }
+                className: 'stat-avatar warning'
               },
                 React.createElement(icons.Percent, {})
               )
@@ -699,9 +512,9 @@ function MainContent() {
     ),
     
     // Recent Activity
-    React.createElement(mui.Grid, { container: true, spacing: 3, sx: { mt: 2 } },
+    React.createElement(mui.Grid, { container: true, spacing: 3, className: 'activity-grid' },
       React.createElement(mui.Grid, { item: true, xs: 12, md: 8 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'activity-card' },
           React.createElement(mui.CardHeader, {
             title: '最近活动',
             action: React.createElement(mui.IconButton, {},
@@ -717,12 +530,12 @@ function MainContent() {
       ),
       
       React.createElement(mui.Grid, { item: true, xs: 12, md: 4 },
-        React.createElement(mui.Card, {},
+        React.createElement(mui.Card, { className: 'quick-actions-card' },
           React.createElement(mui.CardHeader, {
             title: '快速操作'
           }),
           React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, { sx: { display: 'flex', flexDirection: 'column', gap: 1 } },
+            React.createElement(mui.Box, { className: 'quick-actions' },
               React.createElement(mui.Button, {
                 variant: 'outlined',
                 fullWidth: true,
@@ -750,7 +563,7 @@ function MainContent() {
 function AppBar({ onMenuClick }) {
   return React.createElement(mui.AppBar, {
     position: 'fixed',
-    sx: { zIndex: (theme) => theme.zIndex.drawer + 1 }
+    className: 'app-bar'
   },
     React.createElement(mui.Toolbar, {},
       React.createElement(mui.IconButton, {
@@ -758,7 +571,7 @@ function AppBar({ onMenuClick }) {
         'aria-label': 'open drawer',
         edge: 'start',
         onClick: onMenuClick,
-        sx: { mr: 2 }
+        className: 'menu-button'
       },
         React.createElement(icons.Menu, {})
       ),
@@ -766,9 +579,9 @@ function AppBar({ onMenuClick }) {
         variant: 'h6',
         noWrap: true,
         component: 'div',
-        sx: { flexGrow: 1 }
+        className: 'app-title'
       }, '企业控制台'),
-      React.createElement(mui.IconButton, { color: 'inherit' },
+      React.createElement(mui.IconButton, { color: 'inherit', className: 'account-button' },
         React.createElement(icons.AccountCircle, {})
       )
     )
@@ -802,13 +615,9 @@ function Dashboard() {
     setUser(null);
   };
   
-  return React.createElement(mui.Box, { sx: { display: 'flex' } },
+  return React.createElement(mui.Box, { className: 'dashboard-container' },
     React.createElement(mui.CssBaseline),
     React.createElement(AppBar, { onMenuClick: handleDrawerToggle }),
-    React.createElement(mui.Box, {
-      component: 'nav',
-      sx: { width: { sm: collapsed ? 80 : 240 }, flexShrink: { sm: 0 } }
-    }),
     React.createElement(Sidebar, {
       open: mobileOpen,
       onClose: handleDrawerToggle,
@@ -824,7 +633,7 @@ function Dashboard() {
   );
 }
 
-// Initialize the dashboard when DOM is ready
+// Initialize dashboard when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   // Bind UMD globals (try a few common names) and log exactly which globals are present
   const muiCandidates = ['MaterialUI', '@mui/material', 'materialUI', 'Mui', 'mui'];
@@ -872,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function() {
     },
   });
 
-  // App component that uses ThemeProvider from the bound mui
+  // App component that uses ThemeProvider from bound mui
   function App() {
     return React.createElement(mui.ThemeProvider, { theme: theme },
       React.createElement(Dashboard)

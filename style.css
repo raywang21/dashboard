@@ -391,3 +391,158 @@ body {
 .sidebar-collapse-control-btn:active {
   transform: scale(0.95);
 }
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* App Bar */
+.app-bar {
+  z-index: 1201;
+}
+
+.menu-button {
+  margin-right: 16px;
+}
+
+.app-title {
+  flex-grow: 1;
+}
+
+.account-button {
+  color: inherit;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding-top: 80px;
+}
+
+.content-header {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Stats Grid */
+.stats-grid {
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  height: 100%;
+}
+
+.stat-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-avatar {
+  width: 56px;
+  height: 56px;
+}
+
+.stat-avatar.primary {
+  background-color: #1976d2;
+  color: white;
+}
+
+.stat-avatar.success {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.stat-avatar.info {
+  background-color: #0288d1;
+  color: white;
+}
+
+.stat-avatar.warning {
+  background-color: #ed6c02;
+  color: white;
+}
+
+/* Activity Grid */
+.activity-grid {
+  margin-top: 16px;
+}
+
+.activity-card,
+.quick-actions-card {
+  height: 100%;
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Chevron rotation */
+.sidebar-collapse-control-btn .expanded {
+  transform: rotate(180deg);
+}
+
+.sidebar-collapse-control-btn .collapsed {
+  transform: rotate(0deg);
+}
+
+/* Sidebar Drawer Content */
+.sidebar-drawer-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Logo containers */
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-title-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sidebar-logo-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Menu list */
+.menu-list {
+  padding: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+    padding-top: 80px;
+  }
+  
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .stats-grid {
+    margin-bottom: 24px;
+  }
+}
