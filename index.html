@@ -35,8 +35,14 @@
     
     <link rel="stylesheet" href="style.css">
     <!-- <script type="application/x-scittle" src="main.cljs"></script> -->
-    <script src="dashboard.js"></script>
+    
+    <!-- Dashboard Components (按正确顺序加载) -->
+    <script src="dashboard-content.js"></script>
+    <script src="reports.js"></script>
+    <script src="users.js"></script>
+    <script src="settings.js"></script>
     <script src="stock-analysis.js"></script>
+    <script src="dashboard-main.js"></script>
   </head>
   <body>
     <div id="app"><div class="loader"></div></div>
