@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雪球股票数据爬取工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>雪球股票数据爬取工具</h1>
+            <p class="subtitle">自动化获取股票财务数据</p>
+        </header>
+
+        <main>
+            <section class="control-panel">
+                <h2>控制面板</h2>
+                <div class="button-group">
+                    <button id="startBtn" class="btn btn-primary">
+                        <span class="btn-icon">▶</span>
+                        Start
+                    </button>
+                    <button id="stopBtn" class="btn btn-danger" disabled>
+                        <span class="btn-icon">■</span>
+                        Stop
+                    </button>
+                </div>
+            </section>
+
+            <section class="demo-panel">
+                <h2>净资产查询</h2>
+                <p class="demo-description">输入股票代码查询净资产信息</p>
+                <div class="stock-input-group">
+                    <input type="text" id="stockCodeInput" class="stock-input" placeholder="输入股票代码，如: 01800, AAPL, MSFT">
+                    <button id="getShareCapitalBtn" class="btn btn-primary">
+                        <span class="btn-icon">📊</span>
+                        查询净资产
+                    </button>
+                </div>
+            </section>
+
+            <section class="result-panel">
+                <h2>净资产结果</h2>
+                <p class="result-description">查询结果将在此处显示</p>
+                <div id="shareCapitalResult" class="result-content" style="display: none;">
+                    <h3>查询结果:</h3>
+                    <div id="shareCapitalOutput"></div>
+                </div>
+            </section>
+
+            <section class="status-panel">
+                <h2>系统状态</h2>
+                <div class="status-item">
+                    <span class="status-label">浏览器状态:</span>
+                    <span id="browserStatus" class="status-value status-stopped">已停止</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">当前任务:</span>
+                    <span id="currentTask" class="status-value">无</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">运行时间:</span>
+                    <span id="runningTime" class="status-value">00:00:00</span>
+                </div>
+            </section>
+
+            <section class="log-panel">
+                <h2>操作日志</h2>
+                <div class="log-controls">
+                    <button id="clearLogBtn" class="btn btn-secondary">清空日志</button>
+                    <button id="refreshLogBtn" class="btn btn-secondary">刷新日志</button>
+                </div>
+                <div id="logContainer" class="log-container">
+                    <div class="log-entry log-info">
+                        <span class="log-time">[系统]</span>
+                        <span class="log-message">系统已就绪，等待操作...</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 雪球股票数据爬取工具 | 基于 Playwright & ClojureScript</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

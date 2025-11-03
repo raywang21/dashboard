@@ -129,11 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Navigation items
   const navigationItems = [
-    { text: '仪表板', icon: 'dashboard', active: true },
-    { text: '分析', icon: 'analytics' },
-    { text: '报告', icon: 'description' },
-    { text: '用户', icon: 'people' },
-    { text: '设置', icon: 'settings' },
+    { text: '仪表板', icon: 'dashboard', page: 'dashboard' },
+    { text: '分析', icon: 'analytics', page: 'analysis' },
+    { text: '报告', icon: 'description', page: 'reports' },
+    { text: '用户', icon: 'people', page: 'users' },
+    { text: '设置', icon: 'settings', page: 'settings' },
   ];
 
   // Mock data for dashboard
@@ -292,10 +292,47 @@ document.addEventListener('DOMContentLoaded', function() {
     );
   }
 
+  // Dashboard Content Component
+  function DashboardContent() {
+    return React.createElement(Box, null,
+      // Page Title
+      React.createElement(Typography, { variant: "h4", gutterBottom: true }, "欢迎回来"),
+      React.createElement(Typography, { variant: "body1", color: "text.secondary", paragraph: true }, "这是您的企业仪表板概览"),
+
+      // Stats Grid
+      React.createElement(Grid, { container: true, spacing: 3, sx: { mb: 4 } },
+        mockStats.map((stat, index) =>
+          React.createElement(Grid, { item: true, xs: 12, sm: 6, md: 3, key: index },
+            React.createElement(StatCard, { stat: stat })
+          )
+        )
+      ),
+
+      // Content Grid
+      React.createElement(Grid, { container: true, spacing: 3 },
+        React.createElement(Grid, { item: true, xs: 12, md: 8 },
+          React.createElement(ProjectsTable, null)
+        ),
+        React.createElement(Grid, { item: true, xs: 12, md: 4 },
+          React.createElement(ActivityList, null)
+        )
+      )
+    );
+  }
+
+  // Placeholder components for other pages
+  function PlaceholderContent({ title }) {
+    return React.createElement(Box, { sx: { p: 3 } },
+      React.createElement(Typography, { variant: "h4", gutterBottom: true }, title),
+      React.createElement(Typography, { variant: "body1", color: "text.secondary" }, "此页面正在开发中...")
+    );
+  }
+
   // Main Dashboard Component
   function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
+    const [currentPage, setCurrentPage] = useState('dashboard');
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -320,7 +357,36 @@ document.addEventListener('DOMContentLoaded', function() {
       setAnchorEl(null);
     };
 
+    const handleNavigationClick = (page) => {
+      setCurrentPage(page);
+    };
+
     const drawerWidth = sidebarOpen ? 240 : 0;
+
+    // Render current page content
+    const renderPageContent = () => {
+      switch (currentPage) {
+        case 'dashboard':
+          return React.createElement(DashboardContent);
+        case 'analysis':
+          return window.StockAnalysis ? React.createElement(window.StockAnalysis) : 
+                 React.createElement(PlaceholderContent, { title: "股票分析" });
+        case 'reports':
+          return React.createElement(PlaceholderContent, { title: "报告" });
+        case 'users':
+          return React.createElement(PlaceholderContent, { title: "用户管理" });
+        case 'settings':
+          return React.createElement(PlaceholderContent, { title: "设置" });
+        default:
+          return React.createElement(DashboardContent);
+      }
+    };
+
+    // Get page title for header
+    const getPageTitle = () => {
+      const item = navigationItems.find(nav => nav.page === currentPage);
+      return item ? item.text : '企业仪表板';
+    };
 
     return React.createElement(Box, { sx: { display: 'flex' } },
       // App Bar
@@ -355,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
           },
             React.createElement('span', { className: "material-icons" }, "menu")
           ),
-          React.createElement(Typography, { variant: "h6", noWrap: true, component: "div", sx: { flexGrow: 1 } }, "企业仪表板"),
+          React.createElement(Typography, { variant: "h6", noWrap: true, component: "div", sx: { flexGrow: 1 } }, getPageTitle()),
           React.createElement(IconButton, { color: "inherit", onClick: handleProfileMenuOpen },
             React.createElement(Avatar, { sx: { width: 32, height: 32, bgcolor: 'secondary.main' } }, "A")
           ),
@@ -394,7 +460,8 @@ document.addEventListener('DOMContentLoaded', function() {
               React.createElement(ListItem, {
                 button: true,
                 key: item.text,
-                selected: item.active,
+                selected: currentPage === item.page,
+                onClick: () => handleNavigationClick(item.page),
                 sx: {
                   '&.Mui-selected': {
                     backgroundColor: 'primary.main',
@@ -439,29 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       },
         React.createElement(Toolbar, null),
-        
-        // Page Title
-        React.createElement(Typography, { variant: "h4", gutterBottom: true }, "欢迎回来"),
-        React.createElement(Typography, { variant: "body1", color: "text.secondary", paragraph: true }, "这是您的企业仪表板概览"),
-
-        // Stats Grid
-        React.createElement(Grid, { container: true, spacing: 3, sx: { mb: 4 } },
-          mockStats.map((stat, index) =>
-            React.createElement(Grid, { item: true, xs: 12, sm: 6, md: 3, key: index },
-              React.createElement(StatCard, { stat: stat })
-            )
-          )
-        ),
-
-        // Content Grid
-        React.createElement(Grid, { container: true, spacing: 3 },
-          React.createElement(Grid, { item: true, xs: 12, md: 8 },
-            React.createElement(ProjectsTable, null)
-          ),
-          React.createElement(Grid, { item: true, xs: 12, md: 4 },
-            React.createElement(ActivityList, null)
-          )
-        )
+        renderPageContent()
       )
     );
   }
