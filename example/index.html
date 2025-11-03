@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Shiny AI Gate - AI Gateway Management System"
+    />
+    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Shiny AI Gate</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Scittle CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/scittle@0.7.28/dist/scittle.js" type="application/javascript"></script>
+    <script>
+      var SCITTLE_NREPL_WEBSOCKET_PORT = 9999;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/scittle@0.7.28/dist/scittle.nrepl.js"></script>
+    
+    <!-- 新增：scittle-interop.js（必需！） -->
+    <script src="https://cdn.jsdelivr.net/npm/scittle@0.7.28/dist/scittle.js-interop.js" type="application/javascript"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/scittle@0.7.28/dist/scittle.promesa.js" type="application/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react@17.0.2/umd/react.production.min.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.reagent.min.js" type="application/javascript"></script>
+  
+
+    <!-- 禁用自动评估，准备加载 ES modules -->
+    <script>scittle.core.disable_auto_eval()</script>
+    
+    <!-- 加载 API 模块 -->
+    <script type="module">
+      // 导入 API 基础函数
+      import { getUserInfo, request} from '/src/services/api.ts';
+      
+      // 暴露到全局对象供 Scittle 使用
+      globalThis.APIModule = {
+        getUserInfo: getUserInfo,  // 保持现有
+        request: request
+      };
+      
+      // 重新启用 Scittle 脚本评估
+      scittle.core.eval_script_tags();
+    </script>
+    
+    <!-- REPL 执行函数 -->
+    <script>
+      // 执行ClojureScript代码的函数
+      function executeClojureCode(code) {
+        try {
+          console.log("执行ClojureScript代码:", code);
+          const result = scittle.core.eval_string(code);
+          console.log("ClojureScript执行结果:", result);
+          return result;
+        } catch (error) {
+          console.error("ClojureScript执行错误:", error);
+          throw error;
+        }
+      }
+
+      // 执行JavaScript代码的函数
+      function executeJavaScriptCode(code) {
+        try {
+          console.log("执行JavaScript代码:", code);
+          const result = eval(code);
+          console.log("JavaScript执行结果:", result);
+          return result;
+        } catch (error) {
+          console.error("JavaScript执行错误:", error);
+          throw error;
+        }
+      }
+      
+      // 导出到全局作用域
+      globalThis.executeClojureCode = executeClojureCode;
+      globalThis.executeJavaScriptCode = executeJavaScriptCode;
+    </script>
+    
+    <!-- 加载外部cljs文件（注意加载顺序：依赖项先加载） -->
+    <script src="/cljs/demo.cljs" type="application/x-scittle"></script>
+    <script src="/cljs/form_fields.cljs" type="application/x-scittle"></script>
+    <script src="/cljs/enhanced_form_fields.cljs" type="application/x-scittle"></script>
+    <script src="/cljs/plugininfo.cljs" type="application/x-scittle"></script>
+
+    <!-- 直接内联ClojureScript代码 - 使用不同的命名空间 -->
+    <script type="application/x-scittle">
+      (ns inline.core)
+      
+      (defn my-alert []
+        (js/alert "内联代码测试成功！你点击了按钮！"))
+      ;; export function to use from JavaScript:
+      (set! (.-my_alert js/window) my-alert)
+    </script>
+    
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>

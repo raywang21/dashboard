@@ -4,6 +4,8 @@ body {
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
 }
 
 /* Hide the loader when dashboard loads */
@@ -17,14 +19,375 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Glassmorphism Sidebar Styles */
+.sidebar-drawer .MuiDrawer-paper {
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    0 8px 32px rgba(31, 38, 135, 0.37),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+/* Sidebar Header Styles */
+.sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sidebar-logo {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.sidebar-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.sidebar-logo-collapsed {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.sidebar-logo-collapsed:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Menu Item Styles */
+.menu-item {
+  margin: 0 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.menu-item.collapsed {
+  margin: 0;
+}
+
+.menu-item-button {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.3s ease;
+}
+
+.menu-item-button:hover::before {
+  left: 100%;
+}
+
+.menu-item-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: translateX(2px);
+}
+
+.menu-item-button.selected {
+  background: rgba(25, 118, 210, 0.15) !important;
+  color: #1976d2 !important;
+  font-weight: 500;
+}
+
+.menu-item-button.selected::before {
+  background: linear-gradient(90deg, transparent, rgba(25, 118, 210, 0.2), transparent);
+  left: 100%;
+}
+
+.menu-icon {
+  transition: all 0.3s ease;
+}
+
+.menu-icon.collapsed {
+  justify-content: center !important;
+}
+
+.menu-text {
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: black;
+  transition: all 0.3s ease;
+}
+
+.menu-item-button:hover .menu-text {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* Footer Styles */
+.sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sidebar-footer.collapsed {
+  padding: 8px 0;
+}
+
+.footer-item {
+  border-radius: 0;
+  transition: all 0.3s ease;
+}
+
+.footer-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-user-avatar {
+  background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+  transition: all 0.3s ease;
+}
+
+.sidebar-user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+.sidebar-user-role {
+  color: rgba(0, 0, 0, 0.6) !important;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.footer-item:hover .sidebar-user-role {
+  color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Collapse Control Styles */
+.sidebar-collapse-control {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sidebar-collapse-control-btn {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-collapse-control-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Tooltip Styles */
+.MuiTooltip-tooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.MuiTooltip-arrow {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Badge Styles */
+.MuiBadge-badge {
+  background: linear-gradient(135deg, #f44336, #d32f2f) !important;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
+}
+
+/* Menu Container Styles */
+.sidebar-menu-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.sidebar-menu-container.collapsed {
+  align-items: center;
+  padding: 8px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar-drawer .MuiDrawer-paper {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  
+  .menu-item-button {
+    padding: 12px 16px !important;
+  }
+  
+  .menu-icon {
+    min-width: 36px !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Animation for sidebar collapse/expand */
+.sidebar-drawer .MuiDrawer-paper {
+  transition: width 0.3s ease !important;
+}
+
+/* Hover effects for menu items */
+.menu-item {
+  position: relative;
+}
+
+.menu-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.menu-item:hover::after {
+  width: 80%;
+}
+
+.menu-item.selected::after {
+  width: 100%;
+}
+
+/* Glassmorphism effect for main content */
+.main-content {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card glassmorphism */
+.MuiCard-root {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15) !important;
+}
+
+.MuiCard-root:hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.2) !important;
+}
+
+/* Dialog glassmorphism */
+.MuiDialog-paper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Menu glassmorphism */
+.MuiMenu-paper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+.MuiMenuItem-root {
+  transition: all 0.2s ease !important;
+}
+
+.MuiMenuItem-root:hover {
+  background: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* AppBar glassmorphism */
+.MuiAppBar-root {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Button hover effects */
+.MuiButton-root {
+  transition: all 0.3s ease !important;
+}
+
+.MuiButton-root:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.3s ease;
+}
+
+/* Focus styles */
+.menu-item-button:focus {
+  outline: 2px solid rgba(25, 118, 210, 0.5);
+  outline-offset: 2px;
+}
+
+.sidebar-collapse-control-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.menu-item-button:active {
+  transform: scale(0.98);
+}
+
+.sidebar-collapse-control-btn:active {
+  transform: scale(0.95);
 }

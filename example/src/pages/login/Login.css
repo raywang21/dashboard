@@ -1,0 +1,189 @@
+/* 登录页面全屏背景样式 */
+body.login-page {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom, #2980b9, #6dd5fa, #fff);
+  min-height: 100vh;
+}
+
+/* 登录页面包装器样式 */
+.login-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 登录页面样式 */
+.login-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-paper {
+  padding: 45px;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 
+    0 8px 32px rgba(31, 38, 135, 0.37),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 登录头部 */
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-logo {
+  width: auto;
+  max-width: 200px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.login-title {
+  color: #2c3e50;
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.2rem;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* 登录表单 */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-input {
+  margin: 0;
+}
+
+.login-input .MuiOutlinedInput-root {
+  border-radius: 6px; /* 从8px减少到6px */
+}
+
+.login-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #667eea;
+}
+
+.login-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #667eea;
+  border-width: 2px;
+}
+
+.login-input .MuiInputLabel-root.Mui-focused {
+  color: #667eea;
+}
+
+/* 登录按钮 */
+.login-button {
+  margin-top: 4px !important;
+  padding: 10px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 17px !important;
+  text-transform: none !important;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.5);
+  transform: translateY(-2px);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button:disabled {
+  background: #bdc3c7;
+  box-shadow: none;
+  transform: none;
+}
+
+/* 其他操作按钮 */
+.login-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px; /* 从16px减少到12px */
+}
+
+.login-link {
+  color: #667eea;
+  font-size: 13px; /* 从14px减少到13px */
+  text-transform: none;
+  padding: 3px 6px; /* 从4px 8px减少到3px 6px */
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.login-link:hover {
+  background-color: rgba(102, 126, 234, 0.1);
+  color: #5a6fd8;
+}
+
+/* 错误提示 */
+.login-alert {
+  border-radius: 6px; /* 从8px减少到6px */
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .login-paper {
+    padding: 20px; /* 从24px减少到20px */
+  }
+  
+  .login-container {
+    padding: 12px; /* 从16px减少到12px */
+  }
+  
+  .login-actions {
+    flex-direction: column;
+    gap: 6px; /* 从8px减少到6px */
+    align-items: center;
+  }
+}
+
+/* 密码可见性切换按钮 */
+.login-input .MuiInputAdornment-root .MuiIconButton-root {
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.login-input .MuiInputAdornment-root .MuiIconButton-root:hover {
+  color: #667eea;
+}
+
+/* 输入框聚焦时的标签颜色 */
+.login-input .MuiInputLabel-root.Mui-focused {
+  color: #667eea;
+}
+
+/* 输入框聚焦时的轮廓颜色 */
+.login-input .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #667eea;
+}
+
+/* 输入框悬停时的轮廓颜色 */
+.login-input .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #667eea;
+}

@@ -1,0 +1,375 @@
+/* Sidebar 组件样式 */
+
+/* 统一字体大小和间距配置 */
+:root {
+  --sidebar-font-size-base: 14px;
+  --sidebar-font-size-small: 12px;
+  --sidebar-font-size-large: 16px;
+  --sidebar-spacing-base: 16px;
+  --sidebar-spacing-small: 8px;
+  --sidebar-spacing-large: 24px;
+  --sidebar-icon-text-gap: 12px;
+}
+
+/* 主容器样式 */
+.sidebar-container {
+  flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .sidebar-container {
+    width: auto;
+  }
+}
+
+/* 抽屉内容容器 */
+.sidebar-drawer-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部标题区域 */
+.sidebar-header {
+  padding: var(--sidebar-spacing-base);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px; /* 调整高度以适应更大的logo */
+  /* 微妙的背景渐变 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+/* Logo 容器样式 */
+.sidebar-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+.sidebar-logo-small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-logo-collapsed {
+  height: 32px; /* 从 24px 调整到 32px */
+  width: auto;
+  object-fit: contain;
+}
+
+
+
+/* 收缩状态下的标题图标 */
+.sidebar-title-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* 展开收缩控制区域 */
+.sidebar-collapse-control {
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* 微妙的背景渐变 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+}
+
+.sidebar-collapse-control-btn {
+  color: rgba(0, 0, 0, 0.7);
+  transition: all 0.3s ease;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.sidebar-collapse-control-btn:hover {
+  color: rgba(0, 0, 0, 0.9);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* 收缩状态下的控制按钮 */
+.sidebar-collapse-control .sidebar-collapse-control-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-collapse-control .sidebar-collapse-control-btn:hover {
+  background: rgba(25, 118, 210, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(25, 118, 210, 0.3);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* 中间菜单区域 */
+.sidebar-menu-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+}
+
+/* 收缩状态下的菜单容器 */
+.sidebar-menu-container.collapsed {
+  justify-content: center;
+  align-items: center;
+}
+
+/* 底部用户信息区域 */
+.sidebar-footer {
+  /* padding: 8px 16px; */
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden; /* 确保内容不会超出边界 */
+  /* 微妙的背景渐变 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+/* 收缩状态下的底部区域 */
+.sidebar-footer.collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* 底部项目样式 - 继承菜单样式 */
+.sidebar-footer .menu-item {
+  margin: 0 8px 0px 8px;
+  border-radius: 0; /* 移除圆角，避免边框"吐出来" */
+  width: auto
+}
+
+/* 收缩状态下的菜单项 */
+.sidebar-footer.collapsed .menu-item {
+  margin: 0;
+}
+
+.sidebar-footer .menu-item-button {
+  min-height: 40px;
+  border-radius: 0; /* 移除圆角，避免边框"吐出来" */
+  justify-content: center
+}
+
+/* 收缩状态下的菜单项 */
+.sidebar-footer.collapsed .menu-item-button {
+  justify-content: center;
+  padding: 0px;
+  min-height: 40px;
+  border-radius: 0; /* 移除圆角，避免边框"吐出来" */
+}
+
+.menu-item-button.collapsed {
+  padding: 0px 0px;
+  justify-content: left;
+}
+
+/* 收缩状态下菜单项的背景色移除 */
+.sidebar-menu-container.collapsed .menu-item-button:hover {
+  background-color: transparent;
+}
+
+.sidebar-menu-container.collapsed .menu-item-button.selected {
+  background-color: transparent;
+}
+
+/* 通知图标容器 */
+.sidebar-footer .menu-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
+
+/* 收缩状态下的图标容器 */
+.sidebar-footer.collapsed .menu-icon {
+  margin: 0 auto;
+  position: relative;
+  justify-content: center;
+}
+
+/* 收缩状态下的菜单图标容器 */
+.sidebar-menu-container.collapsed .menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* 收缩状态下菜单图标的悬浮状态 - 玻璃质感 */
+.sidebar-menu-container.collapsed .menu-item-button:hover .menu-icon {
+  background: rgba(25, 118, 210, 0.8);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(25, 118, 210, 0.3);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* 收缩状态下菜单图标的选中状态 - 玻璃质感 */
+.sidebar-menu-container.collapsed .menu-item-button.selected .menu-icon {
+  background: rgba(25, 118, 210, 0.9);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(25, 118, 210, 0.4);
+  color: white;
+}
+
+/* 红色通知圆点 */
+.sidebar-notification-dot {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #f44336;
+  animation: pulse 2s infinite;
+  border: 1px solid white;
+  z-index: 1;
+}
+
+/* 收缩状态下的通知红点 */
+.sidebar-footer.collapsed .sidebar-notification-dot {
+  top: 0px;
+  right: 4px;
+}
+
+/* 用户头像样式 */
+.sidebar-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: var(--sidebar-font-size-base);
+  font-weight: bold;
+}
+
+/* 用户角色文字样式 */
+.sidebar-user-role {
+  color: black;
+  font-size: var(--sidebar-font-size-small);
+}
+
+/* 抽屉样式 */
+.sidebar-drawer .MuiDrawer-paper {
+  box-sizing: border-box;
+  /* 玻璃磨砂质感背景 */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  /* 边框和阴影 */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 8px 32px rgba(31, 38, 135, 0.37),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* 确保内容可读性 */
+  color: rgba(0, 0, 0, 0.87);
+}
+
+/* 菜单项悬浮效果 - 玻璃质感 */
+.sidebar-menu-container .menu-item-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* 展开状态下的菜单项悬停效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  border-radius: 8px;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* 展开状态下菜单项悬停时的图标效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button:hover .menu-icon {
+  color: #1976d2;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* 展开状态下菜单项悬停时的文字效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button:hover .menu-text {
+  color: #1976d2;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* 展开状态下的菜单项选中效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button.selected {
+  background: rgba(25, 118, 210, 0.15);
+  backdrop-filter: blur(15px);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* 展开状态下的菜单项选中悬停效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button.selected:hover {
+  background: rgba(25, 118, 210, 0.2);
+  backdrop-filter: blur(20px);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+}
+
+/* 展开状态下选中菜单项的文字和图标效果 */
+.sidebar-menu-container:not(.collapsed) .menu-item-button.selected .menu-icon,
+.sidebar-menu-container:not(.collapsed) .menu-item-button.selected .menu-text {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
