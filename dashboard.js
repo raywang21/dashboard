@@ -1,695 +1,489 @@
-// Enterprise Dashboard using React.createElement and Material UI v5
-
-// Direct access to Material UI v5 from CDN (bound at runtime)
-let mui;
-let icons;
-
-// Enhanced menu configuration matching example project
-const menuItems = [
-  { id: 'dashboard', text: '仪表板', icon: 'DashboardOutlined', path: '/dashboard' },
-  { id: 'routes', text: '路由管理', icon: 'RouteOutlined', path: '/routes' },
-  { id: 'upstreams', text: '上游服务', icon: 'TrendingUpOutlined', path: '/upstreams' },
-  { id: 'consumers', text: '消费者管理', icon: 'PeopleOutlined', path: '/consumers' },
-  { id: 'plugins', text: '插件配置', icon: 'ExtensionOutlined', path: '/plugins' },
-  { id: 'ssl', text: 'SSL证书', icon: 'SecurityOutlined', path: '/ssl' },
-  { id: 'system-config', text: '系统配置', icon: 'SettingsOutlined', path: '/system-config' }
-];
-
-// Icon mapping for Material-UI icons
-const iconMap = {
-  'DashboardOutlined': 'Dashboard',
-  'RouteOutlined': 'Route', 
-  'TrendingUpOutlined': 'TrendingUp',
-  'PeopleOutlined': 'People',
-  'ExtensionOutlined': 'Extension',
-  'SecurityOutlined': 'Security',
-  'SettingsOutlined': 'Settings',
-  'Notifications': 'Notifications',
-  'Person': 'Person',
-  'ChevronLeft': 'ChevronLeft',
-  'Menu': 'Menu',
-  'AccountCircle': 'AccountCircle',
-  'Refresh': 'Refresh',
-  'Add': 'Add',
-  'FileDownload': 'FileDownload',
-  'MoreVert': 'MoreVert',
-  'Logout': 'Logout',
-  'Description': 'Description',
-  'AdminPanelSettings': 'AdminPanelSettings',
-  'Lock': 'Lock',
-  'ShoppingCart': 'ShoppingCart',
-  'Percent': 'Percent'
-};
-
-// Sidebar Header Component
-function SidebarHeader({ collapsed }) {
-  return React.createElement(mui.Box, {
-    className: 'sidebar-header'
-  },
-    !collapsed ? (
-      React.createElement(mui.Box, {
-        className: 'sidebar-logo-container'
-      },
-        React.createElement('img', {
-          src: '/logo.png',
-          alt: 'Shiny AI Gate Logo',
-          className: 'sidebar-logo'
-        })
-      )
-    ) : (
-      React.createElement(mui.Box, {
-        className: 'sidebar-title-icon'
-      },
-        React.createElement(mui.Box, {
-          className: 'sidebar-logo-small'
-        },
-          React.createElement('img', {
-            src: '/logo.svg',
-            alt: 'Logo',
-            className: 'sidebar-logo-collapsed'
-          })
-        )
-      )
-    )
-  );
-}
-
-// Sidebar Menu Component
-function SidebarMenu({ selectedItem, onMenuItemClick, collapsed }) {
-  const handleItemClick = (item) => {
-    if (onMenuItemClick) {
-      onMenuItemClick(item);
-    }
-  };
-
-  const getIcon = (iconName) => {
-    const iconComponent = icons[iconMap[iconName] || icons.Dashboard];
-    return iconComponent;
-  };
-
-  return React.createElement(mui.Box, {
-    className: `sidebar-menu-container ${collapsed ? 'collapsed' : ''}`
-  },
-    React.createElement(mui.List, {
-      className: 'menu-list'
-    },
-      menuItems.map((item) => 
-        React.createElement(mui.ListItem, {
-          key: item.id,
-          disablePadding: true,
-          className: `menu-item ${collapsed ? 'collapsed' : ''}`
-        },
-          React.createElement(mui.Tooltip, {
-            title: collapsed ? item.text : '',
-            placement: 'right',
-            arrow: true,
-            disableHoverListener: !collapsed
-          },
-            React.createElement(mui.ListItemButton, {
-              className: `menu-item-button ${selectedItem === item.id ? 'selected' : ''} ${collapsed ? 'collapsed' : ''}`,
-              onClick: () => handleItemClick(item)
-            },
-              React.createElement(mui.ListItemIcon, {
-                className: `menu-icon ${collapsed ? 'collapsed' : ''}`
-              },
-                getIcon(item.icon)
-              ),
-              
-              !collapsed && React.createElement(mui.ListItemText, {
-                primary: React.createElement(mui.Typography, {
-                  className: 'menu-text'
-                }, item.text)
-              })
-            )
-          )
-        )
-      )
-    )
-  );
-}
-
-// Sidebar Footer Component
-function SidebarFooter({ collapsed, user, onLogout }) {
-  const [userMenuAnchor, setUserMenuAnchor] = React.useState(null);
-  const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false);
-
-  const handleUserMenuOpen = (event) => {
-    setUserMenuAnchor(event.currentTarget);
-  };
-
-  const handleUserMenuClose = () => {
-    setUserMenuAnchor(null);
-  };
-
-  const handleLogoutClick = () => {
-    setUserMenuAnchor(null);
-    setLogoutDialogOpen(true);
-  };
-
-  const handleLogoutConfirm = () => {
-    setLogoutDialogOpen(false);
-    if (onLogout) {
-      onLogout();
-    }
-  };
-
-  const handleLogoutCancel = () => {
-    setLogoutDialogOpen(false);
-  };
-
-  const footerItems = [
-    {
-      id: 'notifications',
-      text: '通知',
-      icon: 'Notifications',
-      badge: '3'
-    },
-    {
-      id: 'user-info',
-      text: user?.username || 'Admin User',
-      subText: user?.role || '管理员',
-      icon: 'Person',
-      avatar: user?.username?.charAt(0).toUpperCase() || 'A'
-    }
-  ];
-
-  const getFooterIcon = (iconName, avatar) => {
-    if (iconName === 'Notifications') {
-      return React.createElement(icons[iconMap[iconName]]);
-    } else if (iconName === 'Person' && avatar) {
-      return React.createElement(mui.Box, {
-        className: 'sidebar-user-avatar'
-      }, avatar);
-    }
-    return React.createElement(icons[iconMap[iconName]] || icons.Person);
-  };
-
-  const renderFooterItem = (item) => {
-    if (item.id === 'user-info') {
-      return React.createElement(mui.ListItem, {
-        key: item.id,
-        disablePadding: true,
-        className: 'menu-item'
-      },
-        React.createElement(mui.ListItemButton, {
-          className: `menu-item-button footer-item`,
-          onClick: handleUserMenuOpen
-        },
-          React.createElement(mui.ListItemIcon, {
-            className: 'menu-icon'
-          },
-            getFooterIcon(item.icon, item.avatar)
-          ),
-         
-          !collapsed && React.createElement(mui.ListItemText, {
-            primary: React.createElement(mui.Typography, {
-              className: 'menu-text'
-            }, item.text),
-            secondary: item.subText && React.createElement(mui.Typography, {
-              variant: 'caption',
-              className: 'sidebar-user-role'
-            }, item.subText)
-          })
-        )
-      );
-    }
-
-    return React.createElement(mui.ListItem, {
-      key: item.id,
-      disablePadding: true,
-      className: 'menu-item'
-    },
-      React.createElement(mui.Tooltip, {
-        title: collapsed ? item.text : '',
-        placement: 'right',
-        arrow: true,
-        disableHoverListener: !collapsed
-      },
-        React.createElement(mui.ListItemButton, {
-          className: `menu-item-button footer-item`,
-          onClick: () => item.id === 'notifications' && console.log('点击了通知')
-        },
-          React.createElement(mui.ListItemIcon, {
-            className: 'menu-icon'
-          },
-            item.id === 'notifications' ? (
-              React.createElement(mui.Badge, {
-                badgeContent: item.badge,
-                color: 'error',
-                invisible: !item.badge
-              },
-                getFooterIcon(item.icon, item.avatar)
-              )
-            ) : (
-              getFooterIcon(item.icon, item.avatar)
-            )
-          ),
-         
-          !collapsed && React.createElement(mui.ListItemText, {
-            primary: React.createElement(mui.Typography, {
-              className: 'menu-text'
-            }, item.text)
-          })
-        )
-      )
-    );
-  };
-
-  return React.createElement(mui.Box, {
-    className: `sidebar-footer ${collapsed ? 'collapsed' : ''}`
-  },
-    footerItems.map(item => renderFooterItem(item)),
-
-    // User Menu
-    React.createElement(mui.Menu, {
-      anchorEl: userMenuAnchor,
-      open: Boolean(userMenuAnchor),
-      onClose: handleUserMenuClose,
-      anchorOrigin: { vertical: 'top', horizontal: 'right' },
-      transformOrigin: { vertical: 'top', horizontal: 'left' }
-    },
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统信息'); } },
-        React.createElement(mui.ListItemIcon, {},
-          React.createElement(icons.Settings, { fontSize: 'small' })
-        ),
-        React.createElement(mui.ListItemText, { primary: '系统信息' })
-      ),
-      React.createElement(mui.Divider),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('文档'); } },
-        React.createElement(mui.ListItemIcon, {},
-          React.createElement(icons.Description, { fontSize: 'small' })
-        ),
-        React.createElement(mui.ListItemText, { primary: '文档' })
-      ),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('系统设置'); } },
-        React.createElement(mui.ListItemIcon, {},
-          React.createElement(icons.AdminPanelSettings, { fontSize: 'small' })
-        ),
-        React.createElement(mui.ListItemText, { primary: '系统设置' })
-      ),
-      React.createElement(mui.MenuItem, { onClick: () => { handleUserMenuClose(); console.log('修改密码'); } },
-        React.createElement(mui.ListItemIcon, {},
-          React.createElement(icons.Lock, { fontSize: 'small' })
-        ),
-        React.createElement(mui.ListItemText, { primary: '修改密码' })
-      ),
-      React.createElement(mui.Divider),
-      React.createElement(mui.MenuItem, { onClick: handleLogoutClick },
-        React.createElement(mui.ListItemIcon, {},
-          React.createElement(icons.Logout, { fontSize: 'small' })
-        ),
-        React.createElement(mui.ListItemText, { primary: '退出登录' })
-      )
-    ),
-
-    // Logout Confirmation Dialog
-    React.createElement(mui.Dialog, {
-      open: logoutDialogOpen,
-      onClose: handleLogoutCancel,
-      'aria-labelledby': 'logout-dialog-title',
-      'aria-describedby': 'logout-dialog-description'
-    },
-      React.createElement(mui.DialogTitle, { id: 'logout-dialog-title' },
-        '确认退出登录'
-      ),
-      React.createElement(mui.DialogContent, {},
-        React.createElement(mui.DialogContentText, { id: 'logout-dialog-description' },
-          '您确定要退出登录吗？退出后需要重新登录才能访问系统。'
-        )
-      ),
-      React.createElement(mui.DialogActions, {},
-        React.createElement(mui.Button, {
-          onClick: handleLogoutCancel,
-          variant: 'outlined'
-        }, '取消'),
-        React.createElement(mui.Button, {
-          onClick: handleLogoutConfirm,
-          variant: 'contained',
-          color: 'error'
-        }, '确认退出')
-      )
-    )
-  );
-}
-
-// Collapse Control Component
-function SidebarCollapseControl({ collapsed, onToggle }) {
-  return React.createElement(mui.Box, {
-    className: 'sidebar-collapse-control'
-  },
-    React.createElement(mui.IconButton, {
-      onClick: onToggle,
-      className: 'sidebar-collapse-control-btn',
-      size: 'small',
-      title: collapsed ? "展开侧边栏" : "收缩侧边栏"
-    },
-      React.createElement(icons.ChevronLeft, {
-        className: collapsed ? 'expanded' : 'collapsed'
-      })
-    )
-  );
-}
-
-// Enhanced Sidebar Component
-function Sidebar({ open, onClose, selectedMenuItem, onMenuItemClick, drawerWidth = 240, onToggleCollapse, collapsed = false, onLogout, user }) {
-  const theme = mui.useTheme();
-  const isMobile = mui.useMediaQuery(theme.breakpoints.down('md'));
-
-  const drawer = React.createElement(mui.Box, {
-    className: 'sidebar-drawer-content'
-  },
-    // Header
-    React.createElement(SidebarHeader, { collapsed }),
-    
-    // Menu
-    React.createElement(SidebarMenu, {
-      selectedItem: selectedMenuItem,
-      onMenuItemClick: onMenuItemClick,
-      collapsed: collapsed
-    }),
-
-    // Footer
-    React.createElement(SidebarFooter, {
-      collapsed: collapsed,
-      user: user,
-      onLogout: onLogout
-    }),
-
-    // Collapse Control
-    React.createElement(SidebarCollapseControl, {
-      collapsed: collapsed,
-      onToggle: onToggleCollapse
-    })
-  );
-
-  return React.createElement(mui.Box, {
-    component: 'nav',
-    className: 'sidebar-container'
-  },
-    React.createElement(mui.Drawer, {
-      variant: isMobile ? "temporary" : "permanent",
-      open: open,
-      onClose: onClose,
-      ModalProps: { keepMounted: true },
-      className: 'sidebar-drawer'
-    },
-      drawer
-    )
-  );
-}
-
-// Main Content Component
-function MainContent() {
-  return React.createElement(mui.Box, {
-    className: 'main-content'
-  },
-    // Header
-    React.createElement(mui.Box, {
-      className: 'content-header'
-    },
-      React.createElement(mui.Typography, { variant: 'h4' },
-        '仪表板概览'
-      ),
-      React.createElement(mui.Button, {
-        variant: 'contained',
-        startIcon: React.createElement(icons.Refresh, {})
-      }, '刷新数据')
-    ),
-    
-    // Stats Cards
-    React.createElement(mui.Grid, { container: true, spacing: 3, className: 'stats-grid' },
-      // Card 1
-      React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, { className: 'stat-card' },
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, {
-              className: 'stat-card-content'
-            },
-              React.createElement(mui.Box, {},
-                React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
-                  '总用户数'
-                ),
-                React.createElement(mui.Typography, { variant: 'h4' }, '1,234')
-              ),
-              React.createElement(mui.Avatar, {
-                className: 'stat-avatar primary'
-              },
-                React.createElement(icons.People, {})
-              )
-            )
-          )
-        )
-      ),
-      
-      // Card 2
-      React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, { className: 'stat-card' },
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, {
-              className: 'stat-card-content'
-            },
-              React.createElement(mui.Box, {},
-                React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
-                  '今日收入'
-                ),
-                React.createElement(mui.Typography, { variant: 'h4' }, '¥12,345')
-              ),
-              React.createElement(mui.Avatar, {
-                className: 'stat-avatar success'
-              },
-                React.createElement(icons.TrendingUp, {})
-              )
-            )
-          )
-        )
-      ),
-      
-      // Card 3
-      React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, { className: 'stat-card' },
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, {
-              className: 'stat-card-content'
-            },
-              React.createElement(mui.Box, {},
-                React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
-                  '订单数量'
-                ),
-                React.createElement(mui.Typography, { variant: 'h4' }, '567')
-              ),
-              React.createElement(mui.Avatar, {
-                className: 'stat-avatar info'
-              },
-                React.createElement(icons.ShoppingCart, {})
-              )
-            )
-          )
-        )
-      ),
-      
-      // Card 4
-      React.createElement(mui.Grid, { item: true, xs: 12, sm: 6, md: 3 },
-        React.createElement(mui.Card, { className: 'stat-card' },
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, {
-              className: 'stat-card-content'
-            },
-              React.createElement(mui.Box, {},
-                React.createElement(mui.Typography, { color: 'textSecondary', gutterBottom: true },
-                  '转化率'
-                ),
-                React.createElement(mui.Typography, { variant: 'h4' }, '3.2%')
-              ),
-              React.createElement(mui.Avatar, {
-                className: 'stat-avatar warning'
-              },
-                React.createElement(icons.Percent, {})
-              )
-            )
-          )
-        )
-      )
-    ),
-    
-    // Recent Activity
-    React.createElement(mui.Grid, { container: true, spacing: 3, className: 'activity-grid' },
-      React.createElement(mui.Grid, { item: true, xs: 12, md: 8 },
-        React.createElement(mui.Card, { className: 'activity-card' },
-          React.createElement(mui.CardHeader, {
-            title: '最近活动',
-            action: React.createElement(mui.IconButton, {},
-              React.createElement(icons.MoreVert, {})
-            )
-          }),
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Typography, { color: 'textSecondary' },
-              '暂无数据显示'
-            )
-          )
-        )
-      ),
-      
-      React.createElement(mui.Grid, { item: true, xs: 12, md: 4 },
-        React.createElement(mui.Card, { className: 'quick-actions-card' },
-          React.createElement(mui.CardHeader, {
-            title: '快速操作'
-          }),
-          React.createElement(mui.CardContent, {},
-            React.createElement(mui.Box, { className: 'quick-actions' },
-              React.createElement(mui.Button, {
-                variant: 'outlined',
-                fullWidth: true,
-                startIcon: React.createElement(icons.Add, {})
-              }, '新建用户'),
-              React.createElement(mui.Button, {
-                variant: 'outlined',
-                fullWidth: true,
-                startIcon: React.createElement(icons.FileDownload, {})
-              }, '导出报告'),
-              React.createElement(mui.Button, {
-                variant: 'outlined',
-                fullWidth: true,
-                startIcon: React.createElement(icons.Settings, {})
-              }, '系统设置')
-            )
-          )
-        )
-      )
-    )
-  );
-}
-
-// App Bar Component
-function AppBar({ onMenuClick }) {
-  return React.createElement(mui.AppBar, {
-    position: 'fixed',
-    className: 'app-bar'
-  },
-    React.createElement(mui.Toolbar, {},
-      React.createElement(mui.IconButton, {
-        color: 'inherit',
-        'aria-label': 'open drawer',
-        edge: 'start',
-        onClick: onMenuClick,
-        className: 'menu-button'
-      },
-        React.createElement(icons.Menu, {})
-      ),
-      React.createElement(mui.Typography, {
-        variant: 'h6',
-        noWrap: true,
-        component: 'div',
-        className: 'app-title'
-      }, '企业控制台'),
-      React.createElement(mui.IconButton, { color: 'inherit', className: 'account-button' },
-        React.createElement(icons.AccountCircle, {})
-      )
-    )
-  );
-}
-
-// Main Dashboard Component
-function Dashboard() {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [collapsed, setCollapsed] = React.useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = React.useState('dashboard');
-  const [user, setUser] = React.useState({ username: 'Admin User', role: '管理员' });
-  
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenuItemClick = (item) => {
-    setSelectedMenuItem(item.id);
-    console.log('Navigate to:', item.path);
-    // Here you could implement actual navigation logic
-  };
-
-  const handleToggleCollapse = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const handleLogout = () => {
-    console.log('User logged out');
-    // Here you could implement actual logout logic
-    setUser(null);
-  };
-  
-  return React.createElement(mui.Box, { className: 'dashboard-container' },
-    React.createElement(mui.CssBaseline),
-    React.createElement(AppBar, { onMenuClick: handleDrawerToggle }),
-    React.createElement(Sidebar, {
-      open: mobileOpen,
-      onClose: handleDrawerToggle,
-      selectedMenuItem: selectedMenuItem,
-      onMenuItemClick: handleMenuItemClick,
-      drawerWidth: collapsed ? 80 : 240,
-      onToggleCollapse: handleToggleCollapse,
-      collapsed: collapsed,
-      onLogout: handleLogout,
-      user: user
-    }),
-    React.createElement(MainContent)
-  );
-}
+// Enterprise Dashboard with Material Design
+// Using React 17 and Material-UI v5 (loaded via CDN)
 
 // Initialize dashboard when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Bind UMD globals (try a few common names) and log exactly which globals are present
-  const muiCandidates = ['MaterialUI', '@mui/material', 'materialUI', 'Mui', 'mui'];
-  const foundMui = [];
-  for (let name of muiCandidates) {
-    if (window[name]) foundMui.push(name);
-  }
-
-  if (foundMui.length === 0) {
-    console.error('Material UI not found on window. Checked globals:', muiCandidates);
+  // Check if MaterialUI is available
+  if (!window.MaterialUI) {
+    console.error('MaterialUI not found on window');
     return;
   }
 
-  // Pick the first detected global to use
-  mui = window[foundMui[0]];
-  console.log('Detected Material UI globals on window:', foundMui, '-> using', foundMui[0]);
+  console.log('MaterialUI found:', window.MaterialUI);
 
-  // MUI Icons v5 does not provide a UMD bundle. Use a lightweight fallback proxy to
-  // avoid runtime errors and keep the UI working without the icons package.
-  console.warn('Material UI Icons v5 UMD is not available. Using lightweight fallback icons (simple spans).');
-  icons = new Proxy({}, {
-    get: function(target, prop) {
-      // Return a simple functional component for any requested icon name.
-      return function(props) {
-        // Provide minimal visual hint and accept style props.
-        const style = Object.assign({ display: 'inline-block', width: 20, height: 20, lineHeight: '20px', textAlign: 'center' }, (props && props.style) || {});
-        return React.createElement('span', Object.assign({}, props, { style: style }), props && props.children ? props.children : '');
-      };
-    }
-  });
+  const { useState, useEffect } = React;
+  const { 
+    ThemeProvider, 
+    createTheme,
+    CssBaseline,
+    AppBar,
+    Toolbar,
+    Typography,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Box,
+    Grid,
+    Card,
+    CardContent,
+    CardActions,
+    Button,
+    Avatar,
+    Menu,
+    MenuItem,
+    useTheme,
+    useMediaQuery,
+    Divider,
+    Chip,
+    LinearProgress,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
+  } = window.MaterialUI;
 
-  // Create theme now that mui is available
-  const theme = mui.createTheme({
+  // Material Design 3 Theme
+  const theme = createTheme({
     palette: {
       mode: 'light',
       primary: {
         main: '#1976d2',
+        light: '#42a5f5',
+        dark: '#1565c0',
+        contrastText: '#ffffff',
       },
       secondary: {
         main: '#dc004e',
+        light: '#ff5983',
+        dark: '#9a0036',
+        contrastText: '#ffffff',
+      },
+      background: {
+        default: '#fafafa',
+        paper: '#ffffff',
+      },
+      surface: {
+        main: '#ffffff',
+        variant: '#f5f5f5',
+      },
+      text: {
+        primary: '#212121',
+        secondary: '#757575',
       },
     },
     typography: {
-      fontFamily: 'Roboto, Arial, sans-serif',
+      fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
+      h1: {
+        fontSize: '2.125rem',
+        fontWeight: 300,
+        lineHeight: 1.167,
+      },
+      h2: {
+        fontSize: '1.5rem',
+        fontWeight: 400,
+        lineHeight: 1.2,
+      },
+      h3: {
+        fontSize: '1.25rem',
+        fontWeight: 500,
+        lineHeight: 1.167,
+      },
+      body1: {
+        fontSize: '1rem',
+        lineHeight: 1.5,
+      },
+      body2: {
+        fontSize: '0.875rem',
+        lineHeight: 1.43,
+      },
+    },
+    spacing: 8,
+    shape: {
+      borderRadius: 12,
+    },
+    components: {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            borderRadius: 12,
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            borderRadius: 8,
+          },
+        },
+      },
     },
   });
 
-  // App component that uses ThemeProvider from bound mui
+  // Navigation items
+  const navigationItems = [
+    { text: '仪表板', icon: 'dashboard', active: true },
+    { text: '分析', icon: 'analytics' },
+    { text: '报告', icon: 'description' },
+    { text: '用户', icon: 'people' },
+    { text: '设置', icon: 'settings' },
+  ];
+
+  // Mock data for dashboard
+  const mockStats = [
+    { title: '总用户数', value: '12,543', change: '+12%', trend: 'up' },
+    { title: '活跃会话', value: '3,421', change: '+5%', trend: 'up' },
+    { title: '转化率', value: '68.2%', change: '-2%', trend: 'down' },
+    { title: '收入', value: '¥89,432', change: '+18%', trend: 'up' },
+  ];
+
+  const mockRecentActivity = [
+    { id: 1, user: '张三', action: '登录系统', time: '2分钟前', status: 'success' },
+    { id: 2, user: '李四', action: '更新配置', time: '5分钟前', status: 'info' },
+    { id: 3, user: '王五', action: '删除数据', time: '10分钟前', status: 'warning' },
+    { id: 4, user: '赵六', action: '导出报告', time: '15分钟前', status: 'success' },
+  ];
+
+  const mockTableData = [
+    { id: 1, name: '项目 Alpha', status: '进行中', progress: 75, owner: '张三', deadline: '2024-01-15' },
+    { id: 2, name: '项目 Beta', status: '已完成', progress: 100, owner: '李四', deadline: '2024-01-10' },
+    { id: 3, name: '项目 Gamma', status: '待开始', progress: 0, owner: '王五', deadline: '2024-01-20' },
+    { id: 4, name: '项目 Delta', status: '进行中', progress: 45, owner: '赵六', deadline: '2024-01-25' },
+  ];
+
+  // Stat Card Component
+  function StatCard({ stat }) {
+    const getTrendColor = (trend) => {
+      return trend === 'up' ? '#4caf50' : '#f44336';
+    };
+
+    const getTrendIcon = (trend) => {
+      return trend === 'up' ? 'trending_up' : 'trending_down';
+    };
+
+    return React.createElement(Card, { sx: { height: '100%' } },
+      React.createElement(CardContent, null,
+        React.createElement(Typography, { variant: "h3", component: "div", gutterBottom: true }, stat.value),
+        React.createElement(Typography, { variant: "body2", color: "text.secondary", gutterBottom: true }, stat.title),
+        React.createElement(Box, { display: "flex", alignItems: "center", mt: 2 },
+          React.createElement('span', { 
+            className: "material-icons",
+            style: { 
+              fontSize: 16, 
+              color: getTrendColor(stat.trend),
+              marginRight: 8 
+            }
+          }, getTrendIcon(stat.trend)),
+          React.createElement(Typography, { 
+            variant: "body2",
+            style: { color: getTrendColor(stat.trend) }
+          }, stat.change)
+        )
+      )
+    );
+  }
+
+  // Activity List Component
+  function ActivityList() {
+    const getStatusColor = (status) => {
+      switch (status) {
+        case 'success': return '#4caf50';
+        case 'warning': return '#ff9800';
+        case 'info': return '#2196f3';
+        default: return '#757575';
+      }
+    };
+
+    return React.createElement(Card, null,
+      React.createElement(CardContent, null,
+        React.createElement(Typography, { variant: "h6", gutterBottom: true }, "最近活动"),
+        React.createElement(List, { dense: true },
+          mockRecentActivity.map((activity) =>
+            React.createElement(ListItem, { key: activity.id, sx: { px: 0 } },
+              React.createElement(Box, { display: "flex", alignItems: "center", width: "100%" },
+                React.createElement(Avatar, { sx: { width: 32, height: 32, mr: 2, bgcolor: 'primary.main' } }, activity.user[0]),
+                React.createElement(Box, { flex: 1 },
+                  React.createElement(Typography, { variant: "body2" },
+                    React.createElement('strong', null, activity.user), " " + activity.action
+                  ),
+                  React.createElement(Typography, { variant: "caption", color: "text.secondary" }, activity.time)
+                ),
+                React.createElement('div', {
+                  style: {
+                    backgroundColor: getStatusColor(activity.status),
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                  }
+                })
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  // Projects Table Component
+  function ProjectsTable() {
+    const getStatusColor = (status) => {
+      switch (status) {
+        case '进行中': return 'warning';
+        case '已完成': return 'success';
+        case '待开始': return 'default';
+        default: return 'default';
+      }
+    };
+
+    return React.createElement(Card, null,
+      React.createElement(CardContent, null,
+        React.createElement(Typography, { variant: "h6", gutterBottom: true }, "项目概览"),
+        React.createElement(TableContainer, null,
+          React.createElement(Table, { size: "small" },
+            React.createElement(TableHead, null,
+              React.createElement(TableRow, null,
+                React.createElement(TableCell, null, "项目名称"),
+                React.createElement(TableCell, null, "状态"),
+                React.createElement(TableCell, null, "进度"),
+                React.createElement(TableCell, null, "负责人"),
+                React.createElement(TableCell, null, "截止日期")
+              )
+            ),
+            React.createElement(TableBody, null,
+              mockTableData.map((row) =>
+                React.createElement(TableRow, { key: row.id },
+                  React.createElement(TableCell, null, row.name),
+                  React.createElement(TableCell, null,
+                    React.createElement(Chip, {
+                      label: row.status,
+                      color: getStatusColor(row.status),
+                      size: "small"
+                    })
+                  ),
+                  React.createElement(TableCell, null,
+                    React.createElement(Box, { display: "flex", alignItems: "center" },
+                      React.createElement(Box, { width: "100%", mr: 1 },
+                        React.createElement(LinearProgress, {
+                          variant: "determinate",
+                          value: row.progress,
+                          sx: { height: 6, borderRadius: 3 }
+                        })
+                      ),
+                      React.createElement(Box, { minWidth: 35 },
+                        React.createElement(Typography, { variant: "body2" }, `${row.progress}%`)
+                      )
+                    )
+                  ),
+                  React.createElement(TableCell, null, row.owner),
+                  React.createElement(TableCell, null, row.deadline)
+                )
+              )
+            )
+          )
+        )
+      )
+    );
+  }
+
+  // Main Dashboard Component
+  function Dashboard() {
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    // Auto-collapse sidebar on mobile
+    useEffect(() => {
+      if (isMobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    }, [isMobile]);
+
+    const handleSidebarToggle = () => {
+      setSidebarOpen(!sidebarOpen);
+    };
+
+    const handleProfileMenuOpen = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleProfileMenuClose = () => {
+      setAnchorEl(null);
+    };
+
+    const drawerWidth = sidebarOpen ? 240 : 0;
+
+    return React.createElement(Box, { sx: { display: 'flex' } },
+      // App Bar
+      React.createElement(AppBar, {
+        position: "fixed",
+        sx: {
+          zIndex: theme.zIndex.drawer + 1,
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          ...(sidebarOpen && !isMobile && {
+            marginLeft: drawerWidth,
+            width: `calc(100% - ${drawerWidth}px)`,
+            transition: theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+          }),
+        }
+      },
+        React.createElement(Toolbar, null,
+          React.createElement(IconButton, {
+            color: "inherit",
+            "aria-label": "open drawer",
+            onClick: handleSidebarToggle,
+            edge: "start",
+            sx: {
+              marginRight: 2,
+              ...(sidebarOpen && !isMobile && { display: 'none' }),
+            }
+          },
+            React.createElement('span', { className: "material-icons" }, "menu")
+          ),
+          React.createElement(Typography, { variant: "h6", noWrap: true, component: "div", sx: { flexGrow: 1 } }, "企业仪表板"),
+          React.createElement(IconButton, { color: "inherit", onClick: handleProfileMenuOpen },
+            React.createElement(Avatar, { sx: { width: 32, height: 32, bgcolor: 'secondary.main' } }, "A")
+          ),
+          React.createElement(Menu, {
+            anchorEl: anchorEl,
+            open: Boolean(anchorEl),
+            onClose: handleProfileMenuClose
+          },
+            React.createElement(MenuItem, { onClick: handleProfileMenuClose }, "个人资料"),
+            React.createElement(MenuItem, { onClick: handleProfileMenuClose }, "设置"),
+            React.createElement(Divider, null),
+            React.createElement(MenuItem, { onClick: handleProfileMenuClose }, "退出登录")
+          )
+        )
+      ),
+
+      // Sidebar
+      React.createElement(Drawer, {
+        variant: isMobile ? 'temporary' : 'persistent',
+        open: sidebarOpen,
+        onClose: handleSidebarToggle,
+        sx: {
+          width: drawerWidth,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            borderRight: '1px solid rgba(0, 0, 0, 0.12)',
+          },
+        }
+      },
+        React.createElement(Toolbar, null),
+        React.createElement(Box, { sx: { overflow: 'auto' } },
+          React.createElement(List, null,
+            navigationItems.map((item) =>
+              React.createElement(ListItem, {
+                button: true,
+                key: item.text,
+                selected: item.active,
+                sx: {
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: 'primary.contrastText',
+                    },
+                  },
+                }
+              },
+                React.createElement(ListItemIcon, null,
+                  React.createElement('span', { className: "material-icons" }, item.icon)
+                ),
+                React.createElement(ListItemText, { primary: item.text })
+              )
+            )
+          )
+        )
+      ),
+
+      // Main Content
+      React.createElement(Box, {
+        component: "main",
+        sx: {
+          flexGrow: 1,
+          p: 3,
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          marginLeft: isMobile ? 0 : `-${drawerWidth}px`,
+          ...(sidebarOpen && !isMobile && {
+            transition: theme.transitions.create('margin', {
+              easing: theme.transitions.easing.easeOut,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            marginLeft: 0,
+          }),
+        }
+      },
+        React.createElement(Toolbar, null),
+        
+        // Page Title
+        React.createElement(Typography, { variant: "h4", gutterBottom: true }, "欢迎回来"),
+        React.createElement(Typography, { variant: "body1", color: "text.secondary", paragraph: true }, "这是您的企业仪表板概览"),
+
+        // Stats Grid
+        React.createElement(Grid, { container: true, spacing: 3, sx: { mb: 4 } },
+          mockStats.map((stat, index) =>
+            React.createElement(Grid, { item: true, xs: 12, sm: 6, md: 3, key: index },
+              React.createElement(StatCard, { stat: stat })
+            )
+          )
+        ),
+
+        // Content Grid
+        React.createElement(Grid, { container: true, spacing: 3 },
+          React.createElement(Grid, { item: true, xs: 12, md: 8 },
+            React.createElement(ProjectsTable, null)
+          ),
+          React.createElement(Grid, { item: true, xs: 12, md: 4 },
+            React.createElement(ActivityList, null)
+          )
+        )
+      )
+    );
+  }
+
+  // App Component
   function App() {
-    return React.createElement(mui.ThemeProvider, { theme: theme },
+    return React.createElement(
+      ThemeProvider, 
+      { theme: theme },
+      React.createElement(CssBaseline),
       React.createElement(Dashboard)
     );
   }
 
-  const appContainer = document.getElementById('app');
-  if (appContainer) {
-    ReactDOM.render(React.createElement(App), appContainer);
+  // Render app
+  try {
+    ReactDOM.render(
+      React.createElement(App),
+      document.getElementById('app')
+    );
+    console.log('Dashboard rendered successfully');
+  } catch (error) {
+    console.error('Error rendering dashboard:', error);
   }
 });
