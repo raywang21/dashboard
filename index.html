@@ -1,19 +1,41 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Scittle Example</title>
+    <title>Enterprise Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/concrete.css@3.0.0/concrete.min.css">
+    
+    <!-- React / ReactDOM (必须最先加载) -->
+    <script src="https://cdn.jsdelivr.net/npm/react@17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+
+    
+    <!-- Emotion（v5 必需） -->
+    <script src="https://cdn.jsdelivr.net/npm/@emotion/react@11/dist/emotion-react.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emotion/styled@11/dist/emotion-styled.umd.min.js"></script>
+
+    <!-- MUI v5 UMD（务必与 emotion 版本兼容） -->
+    <script src="https://cdn.jsdelivr.net/npm/@mui/material@5/umd/material-ui.production.min.js"></script>
+
+    <!-- MUI Icons v5 UMD 已经证实v5不提供UMD版本
+    需要图标的话可以考虑使用其他图标库
+    <script src="https://cdn.jsdelivr.net/npm/@mui/icons-material@5/umd/material-ui-icons.production.min.js"></script> -->
+
+    
+    <!-- scittle -->
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.min.js" type="application/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.promesa.min.js" type="application/javascript"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react@17.0.2/umd/react.production.min.js"></script>
-    <script src=" https://cdn.jsdelivr.net/npm/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.reagent.min.js" type="application/javascript"></script>
+    
     <link rel="stylesheet" href="style.css">
-    <script type="application/x-scittle" src="main.cljs"></script>
+    <!-- <script type="application/x-scittle" src="main.cljs"></script> -->
+    <script src="dashboard.js"></script>
   </head>
   <body>
     <div id="app"><div class="loader"></div></div>
