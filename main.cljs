@@ -1,4 +1,4 @@
-(ns dashboard.core
+(ns core
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
             [clojure.string :as str]
@@ -42,7 +42,7 @@
                        :show-result false
                        :loading {:start false
                                :stop false
-                               :query false}}))
+                               :query false}}}))
 
 ;; 组件加载状态跟踪
 (defonce loaded-components
@@ -58,7 +58,7 @@
 
 ;; 更新模块数据
 (defn update-module-data! [module-key data]
-  (r/swap! module-data assoc module-key data)
+  (swap! module-data assoc module-key data)
   ;; 通知所有订阅者
   (doseq [callback @data-subscribers]
     (when callback
@@ -66,11 +66,11 @@
 
 ;; 订阅数据变化
 (defn subscribe-to-data! [callback]
-  (r/swap! data-subscribers conj callback))
+  (swap! data-subscribers conj callback))
 
 ;; 取消订阅
 (defn unsubscribe-from-data! [callback]
-  (r/swap! data-subscribers disj callback))
+  (swap! data-subscribers disj callback))
 
 ;; 检查组件是否已加载
 (defn component-loaded? [component-name]
@@ -78,7 +78,7 @@
 
 ;; 标记组件为已加载
 (defn mark-component-loaded! [component-name]
-  (r/swap! loaded-components conj component-name))
+  (swap! loaded-components conj component-name))
 
 ;; 获取仪表板数据
 (defn get-dashboard-data []
@@ -113,7 +113,7 @@
 
 ;; 获取设置数据
 (defn get-settings-data []
-  @module-data :settings)
+  (:settings @module-data))
 
 ;; 更新设置数据
 (defn update-settings-data! [key value]
@@ -246,3 +246,5 @@
       (fn [event]
         (when (.-returnValue event)
           (set! (.-returnValue event) true))))))
+
+(println "Dashboard core namespace loaded.")
