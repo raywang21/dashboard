@@ -1,8 +1,8 @@
 // Reports Component for Dashboard
-// 报告页面组件
+// 报告页面组件 - 纯函数版本
 
-// Reports Component
-function Reports() {
+// Reports Component - 纯函数，无内部状态
+function Reports({ data = {} }) {
   const { useState, useEffect } = React;
   const { 
     Box,
@@ -26,8 +26,8 @@ function Reports() {
     TableRow
   } = window.MaterialUI;
 
-  // Mock data for reports
-  const mockReports = [
+  // 从props获取数据，如果没有则使用默认数据
+  const mockReports = data.reports || [
     { 
       id: 1, 
       name: '月度销售报告', 
@@ -62,14 +62,14 @@ function Reports() {
     }
   ];
 
-  const reportCategories = [
+  const reportCategories = data.categories || [
     { name: '销售报告', count: 15, icon: 'trending_up' },
     { name: '用户分析', count: 8, icon: 'people' },
     { name: '财务报表', count: 12, icon: 'account_balance' },
     { name: '技术报告', count: 6, icon: 'code' }
   ];
 
-  // Report Category Card Component
+  // Report Category Card Component - 纯函数
   function ReportCategoryCard({ category }) {
     return React.createElement(Card, { sx: { height: '100%', cursor: 'pointer' } },
       React.createElement(CardContent, null,
@@ -92,7 +92,7 @@ function Reports() {
     );
   }
 
-  // Reports List Component
+  // Reports List Component - 纯函数
   function ReportsList() {
     const getStatusColor = (status) => {
       switch (status) {
@@ -155,7 +155,7 @@ function Reports() {
     );
   }
 
-  // Quick Actions Component
+  // Quick Actions Component - 纯函数
   function QuickActions() {
     return React.createElement(Card, null,
       React.createElement(CardContent, null,

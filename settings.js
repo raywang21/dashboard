@@ -1,8 +1,8 @@
 // Settings Component for Dashboard
-// 设置页面组件
+// 设置页面组件 - 纯函数版本
 
-// Settings Component
-function Settings() {
+// Settings Component - 纯函数，无内部状态
+function Settings({ data = {} }) {
   const { useState, useEffect } = React;
   const { 
     Box,
@@ -31,8 +31,8 @@ function Settings() {
     AccordionDetails
   } = window.MaterialUI;
 
-  // Settings state
-  const [settings, setSettings] = useState({
+  // 从props获取数据，如果没有则使用默认数据
+  const settings = data.settings || {
     // General Settings
     siteName: '企业仪表板',
     siteDescription: '企业级数据分析和可视化平台',
@@ -60,10 +60,9 @@ function Settings() {
     logLevel: 'info',
     maxFileSize: 10,
     cacheTimeout: 60
-  });
+  };
 
-  // Settings categories
-  const settingsCategories = [
+  const settingsCategories = data.categories || [
     { 
       id: 'general', 
       name: '常规设置', 
@@ -96,15 +95,14 @@ function Settings() {
     }
   ];
 
-  // Handle setting change
+  // Handle setting change - 通过回调函数通知父组件
   const handleSettingChange = (key, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    if (data.onSettingChange) {
+      data.onSettingChange(key, value);
+    }
   };
 
-  // General Settings Component
+  // General Settings Component - 纯函数
   function GeneralSettings() {
     return React.createElement(Box, { sx: { '& > *': { mb: 3 } } },
       React.createElement(TextField, {
@@ -152,7 +150,7 @@ function Settings() {
     );
   }
 
-  // Notification Settings Component
+  // Notification Settings Component - 纯函数
   function NotificationSettings() {
     return React.createElement(Box, { sx: { '& > *': { mb: 2 } } },
       React.createElement(FormControlLabel, {
@@ -186,7 +184,7 @@ function Settings() {
     );
   }
 
-  // Security Settings Component
+  // Security Settings Component - 纯函数
   function SecuritySettings() {
     return React.createElement(Box, { sx: { '& > *': { mb: 3 } } },
       React.createElement(FormControlLabel, {
@@ -235,7 +233,7 @@ function Settings() {
     );
   }
 
-  // Appearance Settings Component
+  // Appearance Settings Component - 纯函数
   function AppearanceSettings() {
     return React.createElement(Box, { sx: { '& > *': { mb: 3 } } },
       React.createElement(FormControl, { fullWidth: true },
@@ -270,7 +268,7 @@ function Settings() {
     );
   }
 
-  // System Settings Component
+  // System Settings Component - 纯函数
   function SystemSettings() {
     return React.createElement(Box, { sx: { '& > *': { mb: 3 } } },
       React.createElement(FormControlLabel, {

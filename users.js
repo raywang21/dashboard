@@ -1,8 +1,8 @@
 // Users Management Component for Dashboard
-// 用户管理页面组件
+// 用户管理页面组件 - 纯函数版本
 
-// Users Component
-function Users() {
+// Users Component - 纯函数，无内部状态
+function Users({ data = {} }) {
   const { useState, useEffect } = React;
   const { 
     Box,
@@ -29,8 +29,8 @@ function Users() {
     IconButton
   } = window.MaterialUI;
 
-  // Mock data for users
-  const mockUsers = [
+  // 从props获取数据，如果没有则使用默认数据
+  const mockUsers = data.users || [
     { 
       id: 1, 
       name: '张三', 
@@ -78,14 +78,14 @@ function Users() {
     }
   ];
 
-  const userStats = [
+  const userStats = data.stats || [
     { label: '总用户数', value: '156', change: '+12%', icon: 'people' },
     { label: '活跃用户', value: '89', change: '+5%', icon: 'person' },
     { label: '新用户', value: '23', change: '+18%', icon: 'person_add' },
     { label: '在线用户', value: '34', change: '+8%', icon: 'online_prediction' }
   ];
 
-  // User Stats Card Component
+  // User Stats Card Component - 纯函数
   function UserStatsCard({ stat }) {
     return React.createElement(Card, { sx: { height: '100%' } },
       React.createElement(CardContent, null,
@@ -121,7 +121,7 @@ function Users() {
     );
   }
 
-  // Users Table Component
+  // Users Table Component - 纯函数
   function UsersTable() {
     const getStatusColor = (status) => {
       switch (status) {
@@ -206,7 +206,7 @@ function Users() {
     );
   }
 
-  // User Actions Component
+  // User Actions Component - 纯函数
   function UserActions() {
     return React.createElement(Card, null,
       React.createElement(CardContent, null,
@@ -242,9 +242,9 @@ function Users() {
     );
   }
 
-  // Recent Activity Component
+  // Recent Activity Component - 纯函数
   function RecentActivity() {
-    const recentActivities = [
+    const recentActivities = data.activities || [
       { user: '张三', action: '登录系统', time: '2分钟前', icon: 'login' },
       { user: '李四', action: '修改密码', time: '5分钟前', icon: 'lock' },
       { user: '王五', action: '更新资料', time: '10分钟前', icon: 'person' },

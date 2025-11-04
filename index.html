@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="zh-CN">
   <head>
-    <title>Enterprise Dashboard</title>
+    <title>企业仪表板</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="mobile-web-app-capable" content="yes">
@@ -28,13 +28,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@mui/icons-material@5/umd/material-ui-icons.production.min.js"></script> -->
 
     
-    <!-- scittle -->
+    <!-- Scittle (ClojureScript in browser) -->
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.min.js" type="application/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.promesa.min.js" type="application/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/scittle@latest/dist/scittle.reagent.min.js" type="application/javascript"></script>
     
+    <!-- ClojureScript 数据层 -->
+    <script type="application/x-scittle" src="main.cljs"></script>
+    
     <link rel="stylesheet" href="style.css">
-    <!-- <script type="application/x-scittle" src="main.cljs"></script> -->
     
     <!-- Dashboard Components (按正确顺序加载) -->
     <script src="dashboard-content.js"></script>
@@ -45,6 +47,65 @@
     <script src="dashboard-main.js"></script>
   </head>
   <body>
-    <div id="app"><div class="loader"></div></div>
+    <div id="app">
+      <!-- 加载指示器 -->
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f5f5f5;">
+        <div style="text-align: center;">
+          <div style="width: 40px; height: 40px; border: 4px solid #e3f2fd; border-top: 4px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+          <div style="color: #666; font-family: 'Roboto', sans-serif;">企业仪表板加载中...</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 加载动画样式 -->
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    
+    <!-- 初始化脚本 -->
+    <script>
+      // 等待所有脚本加载完成
+      window.addEventListener('load', function() {
+        console.log('All scripts loaded, initializing dashboard...');
+        
+        // 等待Scittle和ClojureScript初始化
+        setTimeout(function() {
+          try {
+            // 初始化ClojureScript数据层
+            if (window.dashboard && window.dashboard.start) {
+              window.dashboard.start();
+              console.log('ClojureScript data layer initialized');
+            } else if (window.start) {
+              window.start();
+              console.log('ClojureScript started');
+            }
+            
+            // 初始化桥接
+            if (window.initBridge) {
+              window.initBridge();
+              console.log('ClojureScript bridge initialized');
+            }
+            
+            // 初始化默认数据
+            if (window.initDefaultData) {
+              window.initDefaultData();
+              console.log('Default data initialized');
+            }
+            
+            console.log('Dashboard initialization complete');
+          } catch (error) {
+            console.error('Error during initialization:', error);
+          }
+        }, 1000);
+      });
+      
+      // 错误处理
+      window.addEventListener('error', function(e) {
+        console.error('Script loading error:', e.error);
+      });
+    </script>
   </body>
 </html>

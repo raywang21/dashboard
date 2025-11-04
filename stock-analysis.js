@@ -1,8 +1,8 @@
 // Stock Analysis Component for Dashboard
-// Converted from public/ directory stock scraping tool
+// Converted from public/ directory stock scraping tool - 纯函数版本
 
-// Stock Analysis Component
-function StockAnalysis() {
+// Stock Analysis Component - 纯函数，无内部状态
+function StockAnalysis({ data = {} }) {
   const { useState, useEffect, useRef } = React;
   const { 
     Card,
@@ -22,16 +22,16 @@ function StockAnalysis() {
     LinearProgress
   } = window.MaterialUI;
 
-  // Application state
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentTask, setCurrentTask] = useState('无');
-  const [startTime, setStartTime] = useState(null);
-  const [runningTime, setRunningTime] = useState('00:00:00');
-  const [logs, setLogs] = useState([]);
-  const [stockCode, setStockCode] = useState('');
-  const [queryResult, setQueryResult] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [loading, setLoading] = useState({
+  // 从props获取数据，如果没有则使用默认数据
+  const [isRunning, setIsRunning] = useState(data.isRunning || false);
+  const [currentTask, setCurrentTask] = useState(data.currentTask || '无');
+  const [startTime, setStartTime] = useState(data.startTime || null);
+  const [runningTime, setRunningTime] = useState(data.runningTime || '00:00:00');
+  const [logs, setLogs] = useState(data.logs || []);
+  const [stockCode, setStockCode] = useState(data.stockCode || '');
+  const [queryResult, setQueryResult] = useState(data.queryResult || null);
+  const [showResult, setShowResult] = useState(data.showResult || false);
+  const [loading, setLoading] = useState(data.loading || {
     start: false,
     stop: false,
     query: false
@@ -39,18 +39,18 @@ function StockAnalysis() {
 
   const runningTimeInterval = useRef(null);
 
-  // API communication functions
-  async function callCljsFunc(funcName, args = []) {
+  // API communication functions - 从props获取或使用默认
+  const callCljsFunc = data.callCljsFunc || async function(funcName, args = []) {
     const res = await fetch("http://localhost:3001/execute-cljs", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({funcName, args})
     });
     return res.json();
-  }
+  };
 
-  // Log management
-  function addLog(message, type = 'info') {
+  // Log management - 从props获取回调或使用默认
+  const addLog = data.addLog || function(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString('zh-CN');
     const logEntry = {
       time: timestamp,
@@ -66,29 +66,29 @@ function StockAnalysis() {
       }
       return newLogs;
     });
-  }
+  };
 
-  function clearLogs() {
+  const clearLogs = data.clearLogs || function() {
     setLogs([]);
     addLog('日志已清空', 'info');
-  }
+  };
 
   // Running time counter
-  function startRunningTimeCounter() {
+  const startRunningTimeCounter = data.startRunningTimeCounter || function() {
     runningTimeInterval.current = setInterval(() => {
       updateRunningTime();
     }, 1000);
-  }
+  };
 
-  function stopRunningTimeCounter() {
+  const stopRunningTimeCounter = data.stopRunningTimeCounter || function() {
     if (runningTimeInterval.current) {
       clearInterval(runningTimeInterval.current);
       runningTimeInterval.current = null;
     }
     setRunningTime('00:00:00');
-  }
+  };
 
-  function updateRunningTime() {
+  const updateRunningTime = data.updateRunningTime || function() {
     if (startTime) {
       const now = new Date();
       const diff = Math.floor((now - startTime) / 1000);
@@ -99,10 +99,10 @@ function StockAnalysis() {
       const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       setRunningTime(timeString);
     }
-  }
+  };
 
-  // Control functions
-  async function handleStart() {
+  // Control functions - 从props获取回调或使用默认
+  const handleStart = data.handleStart || async function() {
     setLoading(prev => ({...prev, start: true}));
     addLog('正在启动浏览器...', 'info');
 
@@ -123,9 +123,9 @@ function StockAnalysis() {
     } finally {
       setLoading(prev => ({...prev, start: false}));
     }
-  }
+  };
 
-  async function handleStop() {
+  const handleStop = data.handleStop || async function() {
     setLoading(prev => ({...prev, stop: true}));
     addLog('正在停止浏览器...', 'warning');
 
@@ -145,9 +145,9 @@ function StockAnalysis() {
     } finally {
       setLoading(prev => ({...prev, stop: false}));
     }
-  }
+  };
 
-  async function handleGetShareCapital() {
+  const handleGetShareCapital = data.handleGetShareCapital || async function() {
     if (!stockCode.trim()) {
       addLog('请输入股票代码', 'warning');
       return;
@@ -198,9 +198,9 @@ function StockAnalysis() {
     } finally {
       setLoading(prev => ({...prev, query: false}));
     }
-  }
+  };
 
-  async function handleRefreshLog() {
+  const handleRefreshLog = data.handleRefreshLog || async function() {
     try {
       const result = await callCljsFunc("get-logs-data", []);
       if (result.success) {
@@ -212,11 +212,11 @@ function StockAnalysis() {
     } catch (error) {
       addLog(`刷新日志异常: ${error.message}`, 'error');
     }
-  }
+  };
 
-  // Check status periodically
+  // Check status periodically - 从props获取回调或使用默认
   useEffect(() => {
-    const checkStatus = async () => {
+    const checkStatus = data.checkStatus || async function() {
       try {
         const result = await callCljsFunc("get-status", []);
         if (result.success) {

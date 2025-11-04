@@ -1,6 +1,6 @@
 // Enterprise Dashboard with Material Design
 // Using React 17 and Material-UI v5 (loaded via CDN)
-// 重构后的主仪表板文件 - 只包含核心基础设施
+// 重构后的主仪表板文件 - 只包含核心基础设施和路由
 
 // Initialize dashboard when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -123,11 +123,83 @@ document.addEventListener('DOMContentLoaded', function() {
     { text: '设置', icon: 'settings', page: 'settings' },
   ];
 
+  // 组件加载器 - 实现按需加载
+  const componentLoader = {
+    loadedComponents: new Set(),
+    
+    async loadComponent(componentName) {
+      if (this.loadedComponents.has(componentName)) {
+        return window[componentName];
+      }
+      
+      try {
+        console.log(`Loading component: ${componentName}`);
+        
+        // 动态导入组件文件
+        const module = await import(`./${componentName}.js`);
+        
+        // 等待一小段时间确保组件注册到window
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        this.loadedComponents.add(componentName);
+        
+        if (window[componentName]) {
+          console.log(`Component loaded successfully: ${componentName}`);
+          return window[componentName];
+        } else {
+          console.error(`Component not found after loading: ${componentName}`);
+          return null;
+        }
+      } catch (error) {
+        console.error(`Failed to load component ${componentName}:`, error);
+        return null;
+      }
+    },
+    
+    getComponentName(page) {
+      const pageToComponent = {
+        'dashboard': 'DashboardContent',
+        'analysis': 'StockAnalysis',
+        'reports': 'Reports',
+        'users': 'Users',
+        'settings': 'Settings'
+      };
+      return pageToComponent[page] || 'DashboardContent';
+    }
+  };
+
+  // 数据桥接 - 连接ClojureScript数据层
+  const dataBridge = {
+    // 获取模块数据
+    getModuleData: (moduleKey) => {
+      if (window.clojureBridge && window.clojureBridge.getModuleData) {
+        return window.clojureBridge.getModuleData(moduleKey);
+      }
+      return {};
+    },
+    
+    // 订阅数据变化
+    subscribeToData: (callback) => {
+      if (window.clojureBridge && window.clojureBridge.subscribeToData) {
+        window.clojureBridge.subscribeToData(callback);
+      }
+    },
+    
+    // 更新模块数据
+    updateModuleData: (moduleKey, data) => {
+      if (window.clojureBridge && window.clojureBridge.updateModuleData) {
+        window.clojureBridge.updateModuleData(moduleKey, data);
+      }
+    }
+  };
+
   // Main Dashboard Component
   function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
     const [currentPage, setCurrentPage] = useState('dashboard');
+    const [loading, setLoading] = useState(false);
+    const [moduleData, setModuleData] = useState({});
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -139,6 +211,31 @@ document.addEventListener('DOMContentLoaded', function() {
         setSidebarOpen(true);
       }
     }, [isMobile]);
+
+    // 订阅ClojureScript数据变化
+    useEffect(() => {
+      const unsubscribe = dataBridge.subscribeToData((moduleKey, data) => {
+        setModuleData(prev => ({
+          ...prev,
+          [moduleKey]: data
+        }));
+      });
+      
+      return unsubscribe;
+    }, []);
+
+    // 初始化数据
+    useEffect(() => {
+      // 初始化各模块数据
+      const initialData = {
+        dashboard: dataBridge.getModuleData('dashboard'),
+        reports: dataBridge.getModuleData('reports'),
+        users: dataBridge.getModuleData('users'),
+        settings: dataBridge.getModuleData('settings'),
+        analysis: dataBridge.getModuleData('analysis')
+      };
+      setModuleData(initialData);
+    }, []);
 
     const handleSidebarToggle = () => {
       setSidebarOpen(!sidebarOpen);
@@ -152,34 +249,108 @@ document.addEventListener('DOMContentLoaded', function() {
       setAnchorEl(null);
     };
 
-    const handleNavigationClick = (page) => {
+    // 页面切换处理 - 实现懒加载
+    const handleNavigationClick = async (page) => {
+      if (page === currentPage) return;
+      
+      setLoading(true);
       setCurrentPage(page);
+      
+      try {
+        const componentName = componentLoader.getComponentName(page);
+        await componentLoader.loadComponent(componentName);
+        
+        // 更新URL但不刷新页面
+        const url = new URL(window.location);
+        url.searchParams.set('page', page);
+        window.history.pushState({}, '', url.toString());
+      } catch (error) {
+        console.error('Failed to load page:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const drawerWidth = sidebarOpen ? 240 : 0;
+    // 从URL获取当前页面
+    useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageFromUrl = urlParams.get('page') || 'dashboard';
+      if (pageFromUrl !== currentPage) {
+        setCurrentPage(pageFromUrl);
+      }
+    }, []);
 
-    // Render current page content
+    // 渲染当前页面内容
     const renderPageContent = () => {
+      const componentName = componentLoader.getComponentName(currentPage);
+      const Component = window[componentName];
+      
+      if (!Component) {
+        return React.createElement('div', { 
+          style: { 
+            padding: '20px', 
+            textAlign: 'center',
+            color: '#666' 
+          } 
+        }, `页面 ${currentPage} 加载中...`);
+      }
+      
+      // 根据页面类型传递相应的数据和回调
+      let componentData = {};
+      let componentCallbacks = {};
+      
       switch (currentPage) {
         case 'dashboard':
-          return window.DashboardContent ? React.createElement(window.DashboardContent) : 
-                 React.createElement(PlaceholderContent, { title: "仪表板" });
-        case 'analysis':
-          return window.StockAnalysis ? React.createElement(window.StockAnalysis) : 
-                 React.createElement(PlaceholderContent, { title: "股票分析" });
+          componentData = moduleData.dashboard || {};
+          componentCallbacks = {
+            onStatsUpdate: (stats) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, stats }),
+            onActivitiesUpdate: (activities) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, activities })
+          };
+          break;
         case 'reports':
-          return window.Reports ? React.createElement(window.Reports) : 
-                 React.createElement(PlaceholderContent, { title: "报告" });
+          componentData = moduleData.reports || {};
+          componentCallbacks = {
+            onReportUpdate: (report) => console.log('Report updated:', report)
+          };
+          break;
         case 'users':
-          return window.Users ? React.createElement(window.Users) : 
-                 React.createElement(PlaceholderContent, { title: "用户管理" });
+          componentData = moduleData.users || {};
+          componentCallbacks = {
+            onUserUpdate: (user) => console.log('User updated:', user)
+          };
+          break;
         case 'settings':
-          return window.Settings ? React.createElement(window.Settings) : 
-                 React.createElement(PlaceholderContent, { title: "设置" });
-        default:
-          return window.DashboardContent ? React.createElement(window.DashboardContent) : 
-                 React.createElement(PlaceholderContent, { title: "仪表板" });
+          componentData = moduleData.settings || {};
+          componentCallbacks = {
+            onSettingChange: (key, value) => dataBridge.updateModuleData('settings', { ...moduleData.settings, [key]: value })
+          };
+          break;
+        case 'analysis':
+          componentData = moduleData.analysis || {};
+          componentCallbacks = {
+            callCljsFunc: async (funcName, args) => {
+              // 这里可以调用实际的ClojureScript函数
+              console.log(`Calling ${funcName} with args:`, args);
+              return { success: false, error: 'ClojureScript not connected' };
+            },
+            addLog: (message, type) => {
+              if (window.clojureBridge && window.clojureBridge.addAnalysisLog) {
+                window.clojureBridge.addAnalysisLog(message, type);
+              }
+            },
+            clearLogs: () => {
+              if (window.clojureBridge && window.clojureBridge.clearAnalysisLogs) {
+                window.clojureBridge.clearAnalysisLogs();
+              }
+            }
+          };
+          break;
       }
+      
+      return React.createElement(Component, { 
+        data: componentData,
+        ...componentCallbacks
+      });
     };
 
     // Get page title for header
@@ -188,15 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return item ? item.text : '企业仪表板';
     };
 
-    // Placeholder Content Component
-    function PlaceholderContent({ title }) {
-      const { Card, CardContent, Typography } = window.MaterialUI;
-      
-      return React.createElement(Box, { sx: { p: 3 } },
-        React.createElement(Typography, { variant: "h4", gutterBottom: true }, title),
-        React.createElement(Typography, { variant: "body1", color: "text.secondary" }, "此页面正在开发中...")
-      );
-    }
+    const drawerWidth = sidebarOpen ? 240 : 0;
 
     return React.createElement(Box, { sx: { display: 'flex' } },
       // App Bar
@@ -316,7 +479,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       },
         React.createElement(Toolbar, null),
-        renderPageContent()
+        loading ? 
+          React.createElement(Box, { 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center", 
+            height: "200px" 
+          }, 
+            React.createElement(Typography, { variant: "h6" }, "页面加载中...")
+          ) :
+          renderPageContent()
       )
     );
   }

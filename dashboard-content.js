@@ -1,9 +1,8 @@
 // Dashboard Content Component
-// 仪表板页面内容组件
+// 仪表板页面内容组件 - 纯函数版本
 
-// Dashboard Content Component
-function DashboardContent() {
-  const { useState, useEffect } = React;
+// Dashboard Content Component - 纯函数，无内部状态
+function DashboardContent({ data = {} }) {
   const { 
     Box,
     Grid,
@@ -23,29 +22,29 @@ function DashboardContent() {
     LinearProgress
   } = window.MaterialUI;
 
-  // Mock data for dashboard
-  const mockStats = [
+  // 从props获取数据，如果没有则使用默认数据
+  const mockStats = data.stats || [
     { title: '总用户数', value: '12,543', change: '+12%', trend: 'up' },
     { title: '活跃会话', value: '3,421', change: '+5%', trend: 'up' },
     { title: '转化率', value: '68.2%', change: '-2%', trend: 'down' },
     { title: '收入', value: '¥89,432', change: '+18%', trend: 'up' },
   ];
 
-  const mockRecentActivity = [
+  const mockRecentActivity = data.activities || [
     { id: 1, user: '张三', action: '登录系统', time: '2分钟前', status: 'success' },
     { id: 2, user: '李四', action: '更新配置', time: '5分钟前', status: 'info' },
     { id: 3, user: '王五', action: '删除数据', time: '10分钟前', status: 'warning' },
     { id: 4, user: '赵六', action: '导出报告', time: '15分钟前', status: 'success' },
   ];
 
-  const mockTableData = [
+  const mockTableData = data.projects || [
     { id: 1, name: '项目 Alpha', status: '进行中', progress: 75, owner: '张三', deadline: '2024-01-15' },
     { id: 2, name: '项目 Beta', status: '已完成', progress: 100, owner: '李四', deadline: '2024-01-10' },
     { id: 3, name: '项目 Gamma', status: '待开始', progress: 0, owner: '王五', deadline: '2024-01-20' },
     { id: 4, name: '项目 Delta', status: '进行中', progress: 45, owner: '赵六', deadline: '2024-01-25' },
   ];
 
-  // Stat Card Component
+  // Stat Card Component - 纯函数
   function StatCard({ stat }) {
     const getTrendColor = (trend) => {
       return trend === 'up' ? '#4caf50' : '#f44336';
@@ -77,7 +76,7 @@ function DashboardContent() {
     );
   }
 
-  // Activity List Component
+  // Activity List Component - 纯函数
   function ActivityList() {
     const getStatusColor = (status) => {
       switch (status) {
@@ -118,7 +117,7 @@ function DashboardContent() {
     );
   }
 
-  // Projects Table Component
+  // Projects Table Component - 纯函数
   function ProjectsTable() {
     const getStatusColor = (status) => {
       switch (status) {
