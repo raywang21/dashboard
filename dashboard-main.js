@@ -126,11 +126,19 @@ document.addEventListener('DOMContentLoaded', function() {
   // 组件加载器 - 实现按需加载
   const componentLoader = {
     loadedComponents: new Set(),
+    loadingComponents: new Set(),
     
     async loadComponent(componentName) {
       if (this.loadedComponents.has(componentName)) {
         return window[componentName];
       }
+      
+      if (this.loadingComponents.has(componentName)) {
+        // 如果正在加载，等待加载完成
+        return this.waitForComponent(componentName);
+      }
+      
+      this.loadingComponents.add(componentName);
       
       try {
         console.log(`Loading component: ${componentName}`);
@@ -144,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 等待一小段时间确保组件注册到window
         await new Promise(resolve => setTimeout(resolve, 100));
         
+        this.loadingComponents.delete(componentName);
         this.loadedComponents.add(componentName);
         
         if (window[componentName]) {
@@ -154,9 +163,33 @@ document.addEventListener('DOMContentLoaded', function() {
           return null;
         }
       } catch (error) {
+        this.loadingComponents.delete(componentName);
         console.error(`Failed to load component ${componentName}:`, error);
         return null;
       }
+    },
+    
+    // 等待组件加载完成
+    waitForComponent(componentName, timeout = 10000) {
+      return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        const checkComponent = () => {
+          if (this.loadedComponents.has(componentName)) {
+            resolve(window[componentName]);
+            return;
+          }
+          
+          if (Date.now() - startTime > timeout) {
+            reject(new Error(`Component ${componentName} loading timeout`));
+            return;
+          }
+          
+          setTimeout(checkComponent, 100);
+        };
+        
+        checkComponent();
+      });
     },
     
     // 预加载组件
@@ -173,6 +206,23 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Essential components preloaded successfully');
       } catch (error) {
         console.error('Failed to preload essential components:', error);
+      }
+    },
+    
+    // 根据URL参数智能预加载组件
+    async preloadComponentFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageFromUrl = urlParams.get('page');
+      
+      if (pageFromUrl && pageFromUrl !== 'dashboard') {
+        const componentName = this.getComponentName(pageFromUrl);
+        console.log(`Preloading component from URL: ${componentName}`);
+        try {
+          await this.preloadComponent(componentName);
+          console.log(`URL component preloaded: ${componentName}`);
+        } catch (error) {
+          console.error(`Failed to preload URL component: ${componentName}`, error);
+        }
       }
     },
     
@@ -206,6 +256,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       return 'dashboard-content'; // 默认返回
+    },
+    
+    // 检查组件是否正在加载
+    isComponentLoading(componentName) {
+      return this.loadingComponents.has(componentName);
     }
   };
 
@@ -242,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const [loading, setLoading] = useState(false);
     const [moduleData, setModuleData] = useState({});
     const [componentLoading, setComponentLoading] = useState(true);
+    const [urlPageLoading, setUrlPageLoading] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -279,15 +335,20 @@ document.addEventListener('DOMContentLoaded', function() {
       setModuleData(initialData);
     }, []);
 
-    // 预加载关键组件
+    // 预加载关键组件和URL指定的组件
     useEffect(() => {
       const preloadComponents = async () => {
         setComponentLoading(true);
         try {
+          // 预加载基础组件
           await componentLoader.preloadEssentialComponents();
-          console.log('Dashboard component preloaded successfully');
+          
+          // 智能预加载URL指定的组件
+          await componentLoader.preloadComponentFromUrl();
+          
+          console.log('All components preloaded successfully');
         } catch (error) {
-          console.error('Failed to preload dashboard component:', error);
+          console.error('Failed to preload components:', error);
         } finally {
           setComponentLoading(false);
         }
@@ -295,6 +356,36 @@ document.addEventListener('DOMContentLoaded', function() {
       
       preloadComponents();
     }, []);
+
+    // 改进的URL参数处理 - 确保组件加载完成后再设置页面
+    useEffect(() => {
+      const handleUrlPageChange = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page') || 'dashboard';
+        
+        if (pageFromUrl !== currentPage) {
+          const componentName = componentLoader.getComponentName(pageFromUrl);
+          
+          // 如果组件还未加载，先加载组件
+          if (!componentLoader.loadedComponents.has(componentName)) {
+            setUrlPageLoading(true);
+            try {
+              await componentLoader.loadComponent(componentName);
+              console.log(`URL page component loaded: ${componentName}`);
+            } catch (error) {
+              console.error(`Failed to load URL page component: ${componentName}`, error);
+            } finally {
+              setUrlPageLoading(false);
+            }
+          }
+          
+          // 现在可以安全地设置当前页面
+          setCurrentPage(pageFromUrl);
+        }
+      };
+
+      handleUrlPageChange();
+    }, []); // 只在组件挂载时执行一次
 
     const handleSidebarToggle = () => {
       setSidebarOpen(!sidebarOpen);
@@ -313,11 +404,13 @@ document.addEventListener('DOMContentLoaded', function() {
       if (page === currentPage) return;
       
       setLoading(true);
-      setCurrentPage(page);
       
       try {
         const componentName = componentLoader.getComponentName(page);
         await componentLoader.loadComponent(componentName);
+        
+        // 组件加载完成后再设置页面和更新URL
+        setCurrentPage(page);
         
         // 更新URL但不刷新页面
         const url = new URL(window.location);
@@ -330,19 +423,34 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
-    // 从URL获取当前页面
-    useEffect(() => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const pageFromUrl = urlParams.get('page') || 'dashboard';
-      if (pageFromUrl !== currentPage) {
-        setCurrentPage(pageFromUrl);
-      }
-    }, []);
-
     // 渲染当前页面内容
     const renderPageContent = () => {
       const componentName = componentLoader.getComponentName(currentPage);
       const Component = window[componentName];
+      
+      // 如果正在从URL加载页面，显示专门的加载状态
+      if (urlPageLoading) {
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `页面 ${currentPage} 加载中...`)
+        );
+      }
       
       // 如果组件正在预加载中，显示加载指示器
       if (componentLoading && currentPage === 'dashboard') {
@@ -368,15 +476,43 @@ document.addEventListener('DOMContentLoaded', function() {
         );
       }
       
-      // 如果组件未加载，显示加载信息
+      // 如果组件正在加载中，显示加载状态
+      if (componentLoader.isComponentLoading(componentName)) {
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `组件 ${componentName} 加载中...`)
+        );
+      }
+      
+      // 如果组件未加载，显示错误信息
       if (!Component) {
-        return React.createElement('div', { 
-          style: { 
-            padding: '20px', 
-            textAlign: 'center',
-            color: '#666' 
-          } 
-        }, `页面 ${currentPage} 加载中...`);
+        return React.createElement(Box, { 
+          display: "flex", 
+          flexDirection: "column",
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          gap: 2
+        }, 
+          React.createElement(Typography, { variant: "h6", color: "error" }, `页面 ${currentPage} 加载失败`),
+          React.createElement(Typography, { variant: "body2", color: "text.secondary" }, "请刷新页面重试")
+        );
       }
       
       // 根据页面类型传递相应的数据和回调
