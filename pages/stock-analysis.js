@@ -280,44 +280,6 @@ function StockAnalysis({ data = {} }) {
     );
   }
 
-  function renderQueryResult() {
-    if (!showResult || !queryResult) return null;
-
-    if (queryResult.success) {
-      return React.createElement(Card, { sx: { mt: 2 } },
-        React.createElement(CardContent, null,
-          React.createElement(Typography, { variant: "h6", gutterBottom: true }, "查询结果:"),
-          React.createElement(Box, { sx: { '& > div': { mb: 1 } } },
-            React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "股票代码: "), queryResult.stockCode
-            ),
-            queryResult.totalShareCapital && React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "总股本: "), queryResult.totalShareCapital
-            ),
-            queryResult.shareholderEquity && React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "股东权益: "), queryResult.shareholderEquity
-            ),
-            queryResult.currencyInfo && React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "币种: "), queryResult.currencyInfo
-            ),
-            queryResult.netAssetPerShare && React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "每股净资产: "), queryResult.netAssetPerShare
-            ),
-            React.createElement(Typography, { variant: "body2" },
-              React.createElement('strong', null, "查询状态: "), "净资产查询完成"
-            )
-          )
-        )
-      );
-    } else {
-      return React.createElement(Card, { sx: { mt: 2, bgcolor: '#ffebee' } },
-        React.createElement(CardContent, null,
-          React.createElement(Typography, { variant: "h6", gutterBottom: true, color: '#c62828' }, "查询失败:"),
-          React.createElement(Typography, { variant: "body2", color: '#c62828' }, queryResult.error)
-        )
-      );
-    }
-  }
 
   return React.createElement(Box, { sx: { p: 3 } },
     // Page Title
@@ -381,33 +343,70 @@ function StockAnalysis({ data = {} }) {
                 onClick: handleGetShareCapital,
                 disabled: loading.query
               }, loading.query ? "查询中..." : "查询")
-            ),
-            renderQueryResult()
+            )
           )
         )
       ),
 
-      // Status Panel
+      // Query Result Panel
       React.createElement(Grid, { item: true, xs: 12, md: 4 },
         React.createElement(Card, null,
           React.createElement(CardContent, null,
-            React.createElement(Typography, { variant: "h6", gutterBottom: true }, "系统状态"),
-            React.createElement(Box, { sx: { '& > div': { mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' } } },
-              React.createElement('div', null,
-                React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold' } }, "浏览器状态:"),
-                React.createElement(Chip, {
-                  label: isRunning ? '运行中' : '已停止',
-                  color: isRunning ? 'success' : 'error',
-                  size: "small"
-                })
-              ),
-              React.createElement('div', null,
-                React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold' } }, "当前任务:"),
-                React.createElement(Typography, { variant: "body2" }, currentTask)
-              ),
-              React.createElement('div', null,
-                React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold' } }, "运行时间:"),
-                React.createElement(Typography, { variant: "body2" }, runningTime)
+            React.createElement(Typography, { variant: "h6", gutterBottom: true }, "净资产查询结果"),
+            
+            // Loading state
+            loading.query && React.createElement(Box, { sx: { display: 'flex', justifyContent: 'center', py: 3 } },
+              React.createElement(LinearProgress, { sx: { width: '100%' } })
+            ),
+            
+            // Empty state
+            !loading.query && !showResult && React.createElement(Box, { sx: { py: 3, textAlign: 'center' } },
+              React.createElement(Typography, { variant: "body2", color: "text.secondary" }, 
+                "暂无查询结果，请在左侧输入股票代码进行查询"
+              )
+            ),
+            
+            // Query result display
+            !loading.query && showResult && queryResult && React.createElement(Box, { sx: { mt: 1 } },
+              queryResult.success ? React.createElement(Box, { sx: { '& > div': { mb: 1.5 } } },
+                React.createElement(Box, { sx: { mb: 2, pb: 1, borderBottom: '1px solid #eee' } },
+                  React.createElement(Typography, { variant: "h6", color: "primary" }, queryResult.stockCode)
+                ),
+                queryResult.totalShareCapital && React.createElement('div', null,
+                  React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold', color: '#666' } }, "总股本:"),
+                  React.createElement(Typography, { variant: "body1", sx: { fontWeight: 'medium' } }, queryResult.totalShareCapital)
+                ),
+                queryResult.shareholderEquity && React.createElement('div', null,
+                  React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold', color: '#666' } }, "股东权益:"),
+                  React.createElement(Typography, { variant: "body1", sx: { fontWeight: 'medium' } }, queryResult.shareholderEquity)
+                ),
+                queryResult.currencyInfo && React.createElement('div', null,
+                  React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold', color: '#666' } }, "币种:"),
+                  React.createElement(Typography, { variant: "body1", sx: { fontWeight: 'medium' } }, queryResult.currencyInfo)
+                ),
+                queryResult.netAssetPerShare && React.createElement('div', null,
+                  React.createElement(Typography, { variant: "body2", sx: { fontWeight: 'bold', color: '#666' } }, "每股净资产:"),
+                  React.createElement(Typography, { variant: "body1", sx: { fontWeight: 'medium', color: 'primary' } }, queryResult.netAssetPerShare)
+                ),
+                React.createElement(Box, { sx: { mt: 2, pt: 1, borderTop: '1px solid #eee' } },
+                  React.createElement(Chip, {
+                    label: "查询成功",
+                    color: "success",
+                    size: "small",
+                    icon: React.createElement('span', { className: "material-icons" }, "check_circle")
+                  })
+                )
+              ) : React.createElement(Box, { sx: { py: 2, textAlign: 'center' } },
+                React.createElement(Typography, { variant: "body2", color: "error", sx: { mb: 1 } }, "查询失败"),
+                React.createElement(Typography, { variant: "body2", color: "text.secondary" }, queryResult.error),
+                React.createElement(Box, { sx: { mt: 2 } },
+                  React.createElement(Chip, {
+                    label: "查询失败",
+                    color: "error",
+                    size: "small",
+                    icon: React.createElement('span', { className: "material-icons" }, "error")
+                  })
+                )
               )
             )
           )
