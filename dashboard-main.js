@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileName = this.getFileNameByComponent(componentName);
         
         // 动态导入组件文件
-        const module = await import(`./${fileName}.js`);
+        const module = await import(`./pages/${fileName}.js`);
         
         // 等待一小段时间确保组件注册到window
         await new Promise(resolve => setTimeout(resolve, 100));
