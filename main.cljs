@@ -237,7 +237,8 @@
 (defn ^:export start! []
   (init-default-data!)
   (init-bridge!)
-  (dom/render [dashboard-app] (.getElementById js/document "app")))
+  ;(dom/render [dashboard-app] (.getElementById js/document "app"))
+  )
 
 ;; 开发环境下的热重载
 (when (exists? js/window.location)
@@ -247,4 +248,9 @@
         (when (.-returnValue event)
           (set! (.-returnValue event) true))))))
 
-(println "Dashboard core namespace loaded.")
+;; 全局导出函数 - 确保JavaScript可以访问
+(set! (.-initBridge js/window) init-bridge!)
+(set! (.-initDefaultData js/window) init-default-data!)
+(set! (.-start js/window) start!)
+
+(println "main.cljs loaded.")
