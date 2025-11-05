@@ -159,6 +159,23 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     
+    // 预加载组件
+    async preloadComponent(componentName) {
+      console.log(`Preloading component: ${componentName}`);
+      return this.loadComponent(componentName);
+    },
+    
+    // 预加载关键组件
+    async preloadEssentialComponents() {
+      console.log('Preloading essential components...');
+      try {
+        await this.preloadComponent('DashboardContent');
+        console.log('Essential components preloaded successfully');
+      } catch (error) {
+        console.error('Failed to preload essential components:', error);
+      }
+    },
+    
     // 页面到组件名的映射（保持驼峰命名）
     pageToComponent: {
       'dashboard': 'DashboardContent',
@@ -224,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const [currentPage, setCurrentPage] = useState('dashboard');
     const [loading, setLoading] = useState(false);
     const [moduleData, setModuleData] = useState({});
+    const [componentLoading, setComponentLoading] = useState(true);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -259,6 +277,23 @@ document.addEventListener('DOMContentLoaded', function() {
         analysis: dataBridge.getModuleData('analysis')
       };
       setModuleData(initialData);
+    }, []);
+
+    // 预加载关键组件
+    useEffect(() => {
+      const preloadComponents = async () => {
+        setComponentLoading(true);
+        try {
+          await componentLoader.preloadEssentialComponents();
+          console.log('Dashboard component preloaded successfully');
+        } catch (error) {
+          console.error('Failed to preload dashboard component:', error);
+        } finally {
+          setComponentLoading(false);
+        }
+      };
+      
+      preloadComponents();
     }, []);
 
     const handleSidebarToggle = () => {
@@ -309,6 +344,31 @@ document.addEventListener('DOMContentLoaded', function() {
       const componentName = componentLoader.getComponentName(currentPage);
       const Component = window[componentName];
       
+      // 如果组件正在预加载中，显示加载指示器
+      if (componentLoading && currentPage === 'dashboard') {
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, "仪表板初始化中...")
+        );
+      }
+      
+      // 如果组件未加载，显示加载信息
       if (!Component) {
         return React.createElement('div', { 
           style: { 
