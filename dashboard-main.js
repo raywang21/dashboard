@@ -413,9 +413,33 @@ document.addEventListener('DOMContentLoaded', function() {
           componentData = moduleData.analysis || {};
           componentCallbacks = {
             callCljsFunc: async (funcName, args) => {
-              // 这里可以调用实际的ClojureScript函数
               console.log(`Calling ${funcName} with args:`, args);
-              return { success: false, error: 'ClojureScript not connected' };
+              
+              // 优先使用 ClojureScript bridge
+              if (window.clojureBridge && window.clojureBridge.callCljsFunc) {
+                try {
+                  const result = await window.clojureBridge.callCljsFunc(funcName, args);
+                  console.log(`ClojureScript bridge result for ${funcName}:`, result);
+                  return result;
+                } catch (error) {
+                  console.error(`ClojureScript bridge error for ${funcName}:`, error);
+                }
+              }
+              
+              // 备用方案：直接调用 API
+              try {
+                const res = await fetch("http://localhost:3001/execute-cljs", {
+                  method: "POST",
+                  headers: {"Content-Type": "application/json"},
+                  body: JSON.stringify({funcName, args})
+                });
+                const result = await res.json();
+                console.log(`API result for ${funcName}:`, result);
+                return result;
+              } catch (error) {
+                console.error(`API error for ${funcName}:`, error);
+                return { success: false, error: error.message };
+              }
             },
             addLog: (message, type) => {
               if (window.clojureBridge && window.clojureBridge.addAnalysisLog) {
@@ -426,14 +450,50 @@ document.addEventListener('DOMContentLoaded', function() {
               if (window.clojureBridge && window.clojureBridge.clearAnalysisLogs) {
                 window.clojureBridge.clearAnalysisLogs();
               }
+            },
+            // 添加缺失的数据桥接函数
+            updateModuleData: (moduleKey, data) => {
+              console.log('dataBridge.updateModuleData called with:', moduleKey, data);
+              if (window.clojureBridge && window.clojureBridge.updateModuleData) {
+                window.clojureBridge.updateModuleData(moduleKey, data);
+                console.log('Data updated via clojureBridge');
+              } else {
+                console.error('clojureBridge.updateModuleData not available:', {
+                  bridge: !!window.clojureBridge,
+                  updateModuleData: !!(window.clojureBridge && window.clojureBridge.updateModuleData)
+                });
+              }
+            },
+            getModuleData: (moduleKey) => {
+              console.log('dataBridge.getModuleData called with:', moduleKey);
+              if (window.clojureBridge && window.clojureBridge.getModuleData) {
+                const result = window.clojureBridge.getModuleData(moduleKey);
+                console.log('getModuleData result:', result);
+                return result;
+              } else {
+                console.error('clojureBridge.getModuleData not available:', {
+                  bridge: !!window.clojureBridge,
+                  getModuleData: !!(window.clojureBridge && window.clojureBridge.getModuleData)
+                });
+                return {};
+              }
             }
           };
+          console.log('Analysis componentCallbacks created:', componentCallbacks);
+          console.log('componentCallbacks.updateModuleData type:', typeof componentCallbacks.updateModuleData);
+          console.log('componentCallbacks.getModuleData type:', typeof componentCallbacks.getModuleData);
           break;
       }
       
       return React.createElement(Component, { 
-        data: componentData,
-        ...componentCallbacks
+        data: {
+          ...componentData,
+          updateModuleData: componentCallbacks.updateModuleData,
+          getModuleData: componentCallbacks.getModuleData,
+          callCljsFunc: componentCallbacks.callCljsFunc,
+          addLog: componentCallbacks.addLog,
+          clearLogs: componentCallbacks.clearLogs
+        }
       });
     };
 

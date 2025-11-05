@@ -58,11 +58,41 @@
 
 ;; 更新模块数据
 (defn update-module-data! [module-key data]
-  (swap! module-data assoc module-key data)
-  ;; 通知所有订阅者
-  (doseq [callback @data-subscribers]
-    (when callback
-      (callback module-key data))))
+  (println "update-module-data! called with:" module-key data)
+  (println "Data type:" (type data))
+  (println "Is map?" (map? data))
+  
+  (let [processed-data (cond
+                        ;; 如果是JavaScript对象，转换为ClojureScript map
+                        (and (exists? js/Object) (instance? js/Object data))
+                        (do
+                          (println "Converting JavaScript object to ClojureScript map")
+                          (js->clj data :keywordize-keys true))
+                        
+                        ;; 如果已经是ClojureScript map，直接使用
+                        (map? data)
+                        data
+                        
+                        ;; 其他情况，保持原样
+                        :else
+                        data)]
+    
+    (if (map? processed-data)
+      ;; 如果processed-data是map，则合并更新
+      (do
+        (println "Merging data for module:" module-key)
+        (swap! module-data update-in [module-key] merge processed-data))
+      ;; 如果processed-data不是map，则直接替换整个模块数据
+      (do
+        (println "Replacing entire module data for:" module-key)
+        (swap! module-data assoc module-key processed-data)))
+    
+    ;; 通知所有订阅者
+    (doseq [callback @data-subscribers]
+      (when callback
+        (callback module-key processed-data)))
+    (println "Module data after update:" (get @module-data module-key))
+    (println "Full module-data:" @module-data)))
 
 ;; 订阅数据变化
 (defn subscribe-to-data! [callback]
@@ -135,8 +165,14 @@
 
 ;; 更新分析数据
 (defn update-analysis-data! [key value]
-  (let [current-data (get-in @module-data [:analysis])]
-    (update-module-data! :analysis (assoc current-data key value))))
+  (println "update-analysis-data! called with:" key value)
+  (let [current-data (get-in @module-data [:analysis])
+        ;; 确保key是关键字
+        keyword-key (if (keyword? key) key (keyword key))]
+    (println "Current analysis data:" current-data)
+    (println "Updating key:" keyword-key "with value:" value)
+    (update-module-data! :analysis (assoc current-data keyword-key value))
+    (println "Updated analysis data:" (get-in @module-data [:analysis]))))
 
 ;; 添加日志到分析模块
 (defn add-analysis-log! [message type]
@@ -254,3 +290,9 @@
 (set! (.-start js/window) start!)
 
 (println "main.cljs loaded.")
+
+(comment
+  @main/module-data
+  (:analysis @main/module-data)
+
+  )

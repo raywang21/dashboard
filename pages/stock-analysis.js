@@ -148,6 +148,12 @@ function StockAnalysis({ data = {} }) {
   };
 
   const handleGetShareCapital = data.handleGetShareCapital || async function() {
+    // 添加调试日志 - 检查传入的 data 对象
+    console.log('handleGetShareCapital 开始执行，传入的 data 对象:', data);
+    console.log('data.updateModuleData 是否存在:', !!data.updateModuleData);
+    console.log('data.getModuleData 是否存在:', !!data.getModuleData);
+    console.log('window.clojureBridge 是否存在:', !!window.clojureBridge);
+    
     if (!stockCode.trim()) {
       addLog('请输入股票代码', 'warning');
       return;
@@ -168,32 +174,127 @@ function StockAnalysis({ data = {} }) {
 
     try {
       const result = await Promise.race([queryPromise, timeoutPromise]);
+      console.log('查询结果:', result);
       
       setShowResult(true);
       
       if (result.success) {
-        const data = result.data || {};
-        setQueryResult({
+        // 修复变量名冲突 - 使用 responseData 而不是 data
+        const responseData = result.data || {};
+        const queryResultData = {
           stockCode: result["stock-code"] || stockCode,
-          totalShareCapital: data["total-share-capital"],
-          shareholderEquity: data["shareholder-equity"],
-          currencyInfo: data["currency-info"],
-          netAssetPerShare: data["net-asset-per-share"],
+          totalShareCapital: responseData["total-share-capital"],
+          shareholderEquity: responseData["shareholder-equity"],
+          currencyInfo: responseData["currency-info"],
+          netAssetPerShare: responseData["net-asset-per-share"],
           success: true
-        });
+        };
+        
+        console.log('准备同步的查询结果数据:', queryResultData);
+        
+        // 更新本地状态
+        setQueryResult(queryResultData);
+        
+        // 同步到 ClojureScript atom - 使用正确的 data 变量（props 传入的）
+        if (data.updateModuleData) {
+          console.log('正在同步数据到 ClojureScript atom...');
+          addLog('正在同步数据到 ClojureScript atom...', 'info');
+          
+          const currentAnalysisData = data.getModuleData ? data.getModuleData('analysis') : {};
+          console.log('当前分析数据:', currentAnalysisData);
+          
+          // 创建更新数据，只更新需要修改的字段
+          const updatedAnalysisData = {
+            "query-result": queryResultData,
+            "show-result": true,
+            "stock-code": stockCode
+          };
+          
+          console.log('准备更新的分析数据字段:', updatedAnalysisData);
+          
+          // 使用 updateAnalysisData 函数进行部分更新，而不是替换整个模块
+          if (window.clojureBridge && window.clojureBridge.updateAnalysisData) {
+            // 更新 query-result
+            window.clojureBridge.updateAnalysisData("query-result", queryResultData);
+            // 更新 show-result
+            window.clojureBridge.updateAnalysisData("show-result", true);
+            // 更新 stock-code
+            window.clojureBridge.updateAnalysisData("stock-code", stockCode);
+            console.log('使用 updateAnalysisData 逐字段更新完成');
+          } else {
+            // 备用方案：使用 updateModuleData 但只传递需要更新的字段
+            // 确保使用关键字键名格式
+            const keywordUpdatedData = {
+              "query-result": queryResultData,
+              "show-result": true,
+              "stock-code": stockCode
+            };
+            data.updateModuleData('analysis', keywordUpdatedData);
+            console.log('使用 updateModuleData 更新完成');
+          }
+          
+          console.log('数据同步完成');
+          addLog('查询结果已同步到数据存储', 'success');
+        } else {
+          console.error('data.updateModuleData 不存在:', data);
+          addLog('错误：无法同步数据到存储，updateModuleData 函数不存在', 'error');
+        }
+        
         addLog(`股票 ${stockCode} 净资产查询完成`, 'success');
       } else {
-        setQueryResult({
+        const errorResult = {
           error: result.error,
           success: false
-        });
+        };
+        
+        console.log('查询失败，错误结果:', errorResult);
+        
+        // 更新本地状态
+        setQueryResult(errorResult);
+        
+        // 同步错误状态到 ClojureScript atom
+        if (data.updateModuleData) {
+          console.log('正在同步错误状态到 ClojureScript atom...');
+          const currentAnalysisData = data.getModuleData ? data.getModuleData('analysis') : {};
+          data.updateModuleData('analysis', {
+            ...currentAnalysisData,
+            queryResult: errorResult,
+            showResult: true,
+            stockCode: stockCode
+          });
+          console.log('错误状态同步完成');
+        } else {
+          console.error('data.updateModuleData 不存在，无法同步错误状态');
+        }
+        
         addLog(`股票 ${stockCode} 净资产查询失败: ${result.error}`, 'error');
       }
     } catch (error) {
-      setQueryResult({
+      const errorResult = {
         error: error.message,
         success: false
-      });
+      };
+      
+      console.log('查询异常:', error);
+      
+      // 更新本地状态
+      setQueryResult(errorResult);
+      
+      // 同步错误状态到 ClojureScript atom
+      if (data.updateModuleData) {
+        console.log('正在同步异常状态到 ClojureScript atom...');
+        const currentAnalysisData = data.getModuleData ? data.getModuleData('analysis') : {};
+        data.updateModuleData('analysis', {
+          ...currentAnalysisData,
+          queryResult: errorResult,
+          showResult: true,
+          stockCode: stockCode
+        });
+        console.log('异常状态同步完成');
+      } else {
+        console.error('data.updateModuleData 不存在，无法同步异常状态');
+      }
+      
       addLog(`股票 ${stockCode} 查询失败: ${error.message}`, 'error');
     } finally {
       setLoading(prev => ({...prev, query: false}));
