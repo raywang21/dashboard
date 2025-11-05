@@ -31,15 +31,15 @@
                        :log-level "info"
                        :max-file-size 10
                        :cache-timeout 60}
-              :analysis {:stock-data {}
+              :analysis {:stockData {}
                        :logs []
-                       :is-running false
-                       :current-task "无"
-                       :start-time nil
-                       :running-time "00:00:00"
-                       :stock-code ""
-                       :query-result nil
-                       :show-result false
+                       :isRunning false
+                       :currentTask "无"
+                       :startTime nil
+                       :runningTime "00:00:00"
+                       :stockCode ""
+                       :queryResult nil
+                       :showResult false
                        :loading {:start false
                                :stop false
                                :query false}}}))
@@ -52,6 +52,14 @@
 (defonce data-subscribers
   (r/atom []))
 
+;; JavaScript对象转换函数 - 保持camelCase命名
+(defn js->clj-camelcase [js-obj]
+  "将JavaScript对象转换为ClojureScript map，保持camelCase关键字"
+  (when js-obj
+    (->> (js->clj js-obj :keywordize-keys false)
+         (map (fn [[k v]] [(keyword k) v]))
+         (into {}))))
+
 ;; 获取模块数据
 (defn get-module-data [module-key]
   (get @module-data module-key))
@@ -63,17 +71,17 @@
   (println "Is map?" (map? data))
   
   (let [processed-data (cond
-                        ;; 如果是JavaScript对象，转换为ClojureScript map
+                        ;; JavaScript对象转换
                         (and (exists? js/Object) (instance? js/Object data))
                         (do
                           (println "Converting JavaScript object to ClojureScript map")
-                          (js->clj data :keywordize-keys true))
+                          (js->clj-camelcase data))
                         
-                        ;; 如果已经是ClojureScript map，直接使用
+                        ;; ClojureScript map直接使用
                         (map? data)
                         data
                         
-                        ;; 其他情况，保持原样
+                        ;; 其他情况保持原样
                         :else
                         data)]
     
@@ -152,15 +160,15 @@
 
 ;; 获取分析数据
 (defn get-analysis-data []
-  {:stock-data (get-in @module-data [:analysis :stock-data])
+  {:stockData (get-in @module-data [:analysis :stockData])
    :logs (get-in @module-data [:analysis :logs])
-   :is-running (get-in @module-data [:analysis :is-running])
-   :current-task (get-in @module-data [:analysis :current-task])
-   :start-time (get-in @module-data [:analysis :start-time])
-   :running-time (get-in @module-data [:analysis :running-time])
-   :stock-code (get-in @module-data [:analysis :stock-code])
-   :query-result (get-in @module-data [:analysis :query-result])
-   :show-result (get-in @module-data [:analysis :show-result])
+   :isRunning (get-in @module-data [:analysis :isRunning])
+   :currentTask (get-in @module-data [:analysis :currentTask])
+   :startTime (get-in @module-data [:analysis :startTime])
+   :runningTime (get-in @module-data [:analysis :runningTime])
+   :stockCode (get-in @module-data [:analysis :stockCode])
+   :queryResult (get-in @module-data [:analysis :queryResult])
+   :showResult (get-in @module-data [:analysis :showResult])
    :loading (get-in @module-data [:analysis :loading])})
 
 ;; 更新分析数据

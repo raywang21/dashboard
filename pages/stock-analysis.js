@@ -205,29 +205,29 @@ function StockAnalysis({ data = {} }) {
           
           // 创建更新数据，只更新需要修改的字段
           const updatedAnalysisData = {
-            "query-result": queryResultData,
-            "show-result": true,
-            "stock-code": stockCode
+            "queryResult": queryResultData,
+            "showResult": true,
+            "stockCode": stockCode
           };
           
           console.log('准备更新的分析数据字段:', updatedAnalysisData);
           
           // 使用 updateAnalysisData 函数进行部分更新，而不是替换整个模块
           if (window.clojureBridge && window.clojureBridge.updateAnalysisData) {
-            // 更新 query-result
-            window.clojureBridge.updateAnalysisData("query-result", queryResultData);
-            // 更新 show-result
-            window.clojureBridge.updateAnalysisData("show-result", true);
-            // 更新 stock-code
-            window.clojureBridge.updateAnalysisData("stock-code", stockCode);
+            // 更新 queryResult
+            window.clojureBridge.updateAnalysisData("queryResult", queryResultData);
+            // 更新 showResult
+            window.clojureBridge.updateAnalysisData("showResult", true);
+            // 更新 stockCode
+            window.clojureBridge.updateAnalysisData("stockCode", stockCode);
             console.log('使用 updateAnalysisData 逐字段更新完成');
           } else {
             // 备用方案：使用 updateModuleData 但只传递需要更新的字段
             // 确保使用关键字键名格式
             const keywordUpdatedData = {
-              "query-result": queryResultData,
-              "show-result": true,
-              "stock-code": stockCode
+              "queryResult": queryResultData,
+              "showResult": true,
+              "stockCode": stockCode
             };
             data.updateModuleData('analysis', keywordUpdatedData);
             console.log('使用 updateModuleData 更新完成');
