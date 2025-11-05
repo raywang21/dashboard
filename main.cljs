@@ -1,4 +1,4 @@
-(ns core
+(ns main
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
             [clojure.string :as str]

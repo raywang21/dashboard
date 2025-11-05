@@ -135,8 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         console.log(`Loading component: ${componentName}`);
         
+        // 根据组件名找到对应的文件名
+        const fileName = this.getFileNameByComponent(componentName);
+        
         // 动态导入组件文件
-        const module = await import(`./${componentName}.js`);
+        const module = await import(`./${fileName}.js`);
         
         // 等待一小段时间确保组件注册到window
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -156,15 +159,36 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     
+    // 页面到组件名的映射（保持驼峰命名）
+    pageToComponent: {
+      'dashboard': 'DashboardContent',
+      'analysis': 'StockAnalysis',
+      'reports': 'Reports',
+      'users': 'Users',
+      'settings': 'Settings'
+    },
+    
+    // 页面到文件名的映射（使用实际文件名）
+    pageToFile: {
+      'dashboard': 'dashboard-content',
+      'analysis': 'stock-analysis',
+      'reports': 'reports',
+      'users': 'users',
+      'settings': 'settings'
+    },
+    
     getComponentName(page) {
-      const pageToComponent = {
-        'dashboard': 'DashboardContent',
-        'analysis': 'StockAnalysis',
-        'reports': 'Reports',
-        'users': 'Users',
-        'settings': 'Settings'
-      };
-      return pageToComponent[page] || 'DashboardContent';
+      return this.pageToComponent[page] || 'DashboardContent';
+    },
+    
+    getFileNameByComponent(componentName) {
+      // 根据组件名找到对应的页面，然后获取文件名
+      for (const [page, comp] of Object.entries(this.pageToComponent)) {
+        if (comp === componentName) {
+          return this.pageToFile[page];
+        }
+      }
+      return 'dashboard-content'; // 默认返回
     }
   };
 
