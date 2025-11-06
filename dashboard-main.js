@@ -601,17 +601,54 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log('componentCallbacks.getModuleData type:', typeof componentCallbacks.getModuleData);
           break;
       }
-      
-      return React.createElement(Component, { 
-        data: {
-          ...componentData,
-          updateModuleData: componentCallbacks.updateModuleData,
-          getModuleData: componentCallbacks.getModuleData,
-          callCljsFunc: componentCallbacks.callCljsFunc,
-          addLog: componentCallbacks.addLog,
-          clearLogs: componentCallbacks.clearLogs
-        }
-      });
+      // 根据页面类型只传递需要的回调函数
+      switch (currentPage) {
+        case 'dashboard':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              onStatsUpdate: componentCallbacks.onStatsUpdate,
+              onActivitiesUpdate: componentCallbacks.onActivitiesUpdate
+            }
+          });
+        case 'reports':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              onReportUpdate: componentCallbacks.onReportUpdate
+            }
+          });
+        case 'users':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              onUserUpdate: componentCallbacks.onUserUpdate
+            }
+          });
+        case 'settings':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              onSettingChange: componentCallbacks.onSettingChange
+            }
+          });
+        case 'analysis':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              updateModuleData: componentCallbacks.updateModuleData,
+              getModuleData: componentCallbacks.getModuleData,
+              callCljsFunc: componentCallbacks.callCljsFunc,
+              addLog: componentCallbacks.addLog,
+              clearLogs: componentCallbacks.clearLogs
+            }
+          });
+        default:
+          return React.createElement(Component, { 
+            data: componentData 
+          });
+      }
+  
     };
 
     // Get page title for header
