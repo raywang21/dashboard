@@ -423,81 +423,46 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
+    // 可复用的加载组件
+    function LoadingSpinner({ message }) {
+      return React.createElement(Box, { 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "200px",
+        flexDirection: "column",
+        gap: 2
+      }, 
+        React.createElement('div', { 
+          style: { 
+            width: '40px', 
+            height: '40px', 
+            border: '4px solid #e3f2fd', 
+            borderTop: '4px solid #1976d2', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite' 
+          } 
+        }),
+        React.createElement(Typography, { variant: "h6", color: "text.secondary" }, message)
+      );
+    }
+
     // 渲染当前页面内容
     const renderPageContent = () => {
       const componentName = componentLoader.getComponentName(currentPage);
       const Component = window[componentName];
       
-      // 如果正在从URL加载页面，显示专门的加载状态
+      // 统一的加载状态处理
       if (urlPageLoading) {
-        return React.createElement(Box, { 
-          display: "flex", 
-          justifyContent: "center", 
-          alignItems: "center", 
-          height: "200px",
-          flexDirection: "column",
-          gap: 2
-        }, 
-          React.createElement('div', { 
-            style: { 
-              width: '40px', 
-              height: '40px', 
-              border: '4px solid #e3f2fd', 
-              borderTop: '4px solid #1976d2', 
-              borderRadius: '50%', 
-              animation: 'spin 1s linear infinite' 
-            } 
-          }),
-          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `页面 ${currentPage} 加载中...`)
-        );
+        return React.createElement(LoadingSpinner, { message: `页面 ${currentPage} 加载中...` });
       }
       
-      // 如果组件正在预加载中，显示加载指示器
       if (componentLoading && currentPage === 'dashboard') {
-        return React.createElement(Box, { 
-          display: "flex", 
-          justifyContent: "center", 
-          alignItems: "center", 
-          height: "200px",
-          flexDirection: "column",
-          gap: 2
-        }, 
-          React.createElement('div', { 
-            style: { 
-              width: '40px', 
-              height: '40px', 
-              border: '4px solid #e3f2fd', 
-              borderTop: '4px solid #1976d2', 
-              borderRadius: '50%', 
-              animation: 'spin 1s linear infinite' 
-            } 
-          }),
-          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, "仪表板初始化中...")
-        );
+        return React.createElement(LoadingSpinner, { message: "仪表板初始化中..." });
       }
       
-      // 如果组件正在加载中，显示加载状态
       if (componentLoader.isComponentLoading(componentName)) {
-        return React.createElement(Box, { 
-          display: "flex", 
-          justifyContent: "center", 
-          alignItems: "center", 
-          height: "200px",
-          flexDirection: "column",
-          gap: 2
-        }, 
-          React.createElement('div', { 
-            style: { 
-              width: '40px', 
-              height: '40px', 
-              border: '4px solid #e3f2fd', 
-              borderTop: '4px solid #1976d2', 
-              borderRadius: '50%', 
-              animation: 'spin 1s linear infinite' 
-            } 
-          }),
-          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `组件 ${componentName} 加载中...`)
-        );
+        return React.createElement(LoadingSpinner, { message: `组件 ${componentName} 加载中...` });
       }
       
       // 如果组件未加载，显示错误信息
