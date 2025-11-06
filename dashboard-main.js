@@ -209,6 +209,22 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     
+    // 根据URL参数智能预加载组件
+    async preloadComponentFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageFromUrl = urlParams.get('page');
+      
+      if (pageFromUrl && pageFromUrl !== 'dashboard') {
+        const componentName = this.getComponentName(pageFromUrl);
+        console.log(`Preloading component from URL: ${componentName}`);
+        try {
+          await this.preloadComponent(componentName);
+          console.log(`URL component preloaded: ${componentName}`);
+        } catch (error) {
+          console.error(`Failed to preload URL component: ${componentName}`, error);
+        }
+      }
+    },
     
     // 页面到组件名的映射（保持驼峰命名）
     pageToComponent: {
@@ -319,51 +335,56 @@ document.addEventListener('DOMContentLoaded', function() {
       setModuleData(initialData);
     }, []);
 
-    // 统一的组件初始化逻辑 - 消除重复加载
+    // 预加载关键组件和URL指定的组件
     useEffect(() => {
-      const initializeComponents = async () => {
+      const preloadComponents = async () => {
         setComponentLoading(true);
-        
         try {
-          // 1. 预加载基础组件（dashboard-content）
+          // 预加载基础组件
           await componentLoader.preloadEssentialComponents();
-          console.log('Essential components preloaded successfully');
           
-          // 2. 处理URL页面参数
-          const urlParams = new URLSearchParams(window.location.search);
-          const pageFromUrl = urlParams.get('page') || 'dashboard';
+          // 智能预加载URL指定的组件
+          await componentLoader.preloadComponentFromUrl();
           
-          // 3. 如果URL指定了非dashboard页面，预加载该页面组件
-          if (pageFromUrl !== 'dashboard') {
-            const componentName = componentLoader.getComponentName(pageFromUrl);
-            
-            if (!componentLoader.loadedComponents.has(componentName)) {
-              console.log(`Preloading URL component: ${componentName}`);
-              setUrlPageLoading(true);
-              
-              try {
-                await componentLoader.loadComponent(componentName);
-                console.log(`URL component preloaded: ${componentName}`);
-              } catch (error) {
-                console.error(`Failed to preload URL component: ${componentName}`, error);
-              } finally {
-                setUrlPageLoading(false);
-              }
-            }
-          }
-          
-          // 4. 设置当前页面
-          setCurrentPage(pageFromUrl);
-          console.log(`Initial page set to: ${pageFromUrl}`);
-          
+          console.log('All components preloaded successfully');
         } catch (error) {
-          console.error('Failed to initialize components:', error);
+          console.error('Failed to preload components:', error);
         } finally {
           setComponentLoading(false);
         }
       };
       
-      initializeComponents();
+      preloadComponents();
+    }, []);
+
+    // 改进的URL参数处理 - 确保组件加载完成后再设置页面
+    useEffect(() => {
+      const handleUrlPageChange = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page') || 'dashboard';
+        
+        if (pageFromUrl !== currentPage) {
+          const componentName = componentLoader.getComponentName(pageFromUrl);
+          
+          // 如果组件还未加载，先加载组件
+          if (!componentLoader.loadedComponents.has(componentName)) {
+            setUrlPageLoading(true);
+            try {
+              await componentLoader.loadComponent(componentName);
+              console.log(`URL page component loaded: ${componentName}`);
+            } catch (error) {
+              console.error(`Failed to load URL page component: ${componentName}`, error);
+            } finally {
+              setUrlPageLoading(false);
+            }
+          }
+          
+          // 现在可以安全地设置当前页面
+          setCurrentPage(pageFromUrl);
+        }
+      };
+
+      handleUrlPageChange();
     }, []); // 只在组件挂载时执行一次
 
     const handleSidebarToggle = () => {
@@ -402,46 +423,81 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
-    // 可复用的加载组件
-    function LoadingSpinner({ message }) {
-      return React.createElement(Box, { 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        height: "200px",
-        flexDirection: "column",
-        gap: 2
-      }, 
-        React.createElement('div', { 
-          style: { 
-            width: '40px', 
-            height: '40px', 
-            border: '4px solid #e3f2fd', 
-            borderTop: '4px solid #1976d2', 
-            borderRadius: '50%', 
-            animation: 'spin 1s linear infinite' 
-          } 
-        }),
-        React.createElement(Typography, { variant: "h6", color: "text.secondary" }, message)
-      );
-    }
-
     // 渲染当前页面内容
     const renderPageContent = () => {
       const componentName = componentLoader.getComponentName(currentPage);
       const Component = window[componentName];
       
-      // 统一的加载状态处理
+      // 如果正在从URL加载页面，显示专门的加载状态
       if (urlPageLoading) {
-        return React.createElement(LoadingSpinner, { message: `页面 ${currentPage} 加载中...` });
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `页面 ${currentPage} 加载中...`)
+        );
       }
       
+      // 如果组件正在预加载中，显示加载指示器
       if (componentLoading && currentPage === 'dashboard') {
-        return React.createElement(LoadingSpinner, { message: "仪表板初始化中..." });
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, "仪表板初始化中...")
+        );
       }
       
+      // 如果组件正在加载中，显示加载状态
       if (componentLoader.isComponentLoading(componentName)) {
-        return React.createElement(LoadingSpinner, { message: `组件 ${componentName} 加载中...` });
+        return React.createElement(Box, { 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center", 
+          height: "200px",
+          flexDirection: "column",
+          gap: 2
+        }, 
+          React.createElement('div', { 
+            style: { 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid #e3f2fd', 
+              borderTop: '4px solid #1976d2', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite' 
+            } 
+          }),
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `组件 ${componentName} 加载中...`)
+        );
       }
       
       // 如果组件未加载，显示错误信息
@@ -531,33 +587,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.clojureBridge.clearAnalysisLogs();
               }
             },
-            // 添加缺失的数据桥接函数
-            updateModuleData: (moduleKey, data) => {
-              console.log('dataBridge.updateModuleData called with:', moduleKey, data);
-              if (window.clojureBridge && window.clojureBridge.updateModuleData) {
-                window.clojureBridge.updateModuleData(moduleKey, data);
-                console.log('Data updated via clojureBridge');
-              } else {
-                console.error('clojureBridge.updateModuleData not available:', {
-                  bridge: !!window.clojureBridge,
-                  updateModuleData: !!(window.clojureBridge && window.clojureBridge.updateModuleData)
-                });
-              }
-            },
-            getModuleData: (moduleKey) => {
-              console.log('dataBridge.getModuleData called with:', moduleKey);
-              if (window.clojureBridge && window.clojureBridge.getModuleData) {
-                const result = window.clojureBridge.getModuleData(moduleKey);
-                console.log('getModuleData result:', result);
-                return result;
-              } else {
-                console.error('clojureBridge.getModuleData not available:', {
-                  bridge: !!window.clojureBridge,
-                  getModuleData: !!(window.clojureBridge && window.clojureBridge.getModuleData)
-                });
-                return {};
-              }
-            }
+             // 使用统一的数据桥接函数，避免重复定义
+            updateModuleData: dataBridge.updateModuleData,
+            getModuleData: dataBridge.getModuleData         
           };
           console.log('Analysis componentCallbacks created:', componentCallbacks);
           console.log('componentCallbacks.updateModuleData type:', typeof componentCallbacks.updateModuleData);
