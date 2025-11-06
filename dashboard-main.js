@@ -209,22 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     
-    // 根据URL参数智能预加载组件
-    async preloadComponentFromUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const pageFromUrl = urlParams.get('page');
-      
-      if (pageFromUrl && pageFromUrl !== 'dashboard') {
-        const componentName = this.getComponentName(pageFromUrl);
-        console.log(`Preloading component from URL: ${componentName}`);
-        try {
-          await this.preloadComponent(componentName);
-          console.log(`URL component preloaded: ${componentName}`);
-        } catch (error) {
-          console.error(`Failed to preload URL component: ${componentName}`, error);
-        }
-      }
-    },
     
     // 页面到组件名的映射（保持驼峰命名）
     pageToComponent: {
@@ -335,56 +319,51 @@ document.addEventListener('DOMContentLoaded', function() {
       setModuleData(initialData);
     }, []);
 
-    // 预加载关键组件和URL指定的组件
+    // 统一的组件初始化逻辑 - 消除重复加载
     useEffect(() => {
-      const preloadComponents = async () => {
+      const initializeComponents = async () => {
         setComponentLoading(true);
+        
         try {
-          // 预加载基础组件
+          // 1. 预加载基础组件（dashboard-content）
           await componentLoader.preloadEssentialComponents();
+          console.log('Essential components preloaded successfully');
           
-          // 智能预加载URL指定的组件
-          await componentLoader.preloadComponentFromUrl();
+          // 2. 处理URL页面参数
+          const urlParams = new URLSearchParams(window.location.search);
+          const pageFromUrl = urlParams.get('page') || 'dashboard';
           
-          console.log('All components preloaded successfully');
+          // 3. 如果URL指定了非dashboard页面，预加载该页面组件
+          if (pageFromUrl !== 'dashboard') {
+            const componentName = componentLoader.getComponentName(pageFromUrl);
+            
+            if (!componentLoader.loadedComponents.has(componentName)) {
+              console.log(`Preloading URL component: ${componentName}`);
+              setUrlPageLoading(true);
+              
+              try {
+                await componentLoader.loadComponent(componentName);
+                console.log(`URL component preloaded: ${componentName}`);
+              } catch (error) {
+                console.error(`Failed to preload URL component: ${componentName}`, error);
+              } finally {
+                setUrlPageLoading(false);
+              }
+            }
+          }
+          
+          // 4. 设置当前页面
+          setCurrentPage(pageFromUrl);
+          console.log(`Initial page set to: ${pageFromUrl}`);
+          
         } catch (error) {
-          console.error('Failed to preload components:', error);
+          console.error('Failed to initialize components:', error);
         } finally {
           setComponentLoading(false);
         }
       };
       
-      preloadComponents();
-    }, []);
-
-    // 改进的URL参数处理 - 确保组件加载完成后再设置页面
-    useEffect(() => {
-      const handleUrlPageChange = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pageFromUrl = urlParams.get('page') || 'dashboard';
-        
-        if (pageFromUrl !== currentPage) {
-          const componentName = componentLoader.getComponentName(pageFromUrl);
-          
-          // 如果组件还未加载，先加载组件
-          if (!componentLoader.loadedComponents.has(componentName)) {
-            setUrlPageLoading(true);
-            try {
-              await componentLoader.loadComponent(componentName);
-              console.log(`URL page component loaded: ${componentName}`);
-            } catch (error) {
-              console.error(`Failed to load URL page component: ${componentName}`, error);
-            } finally {
-              setUrlPageLoading(false);
-            }
-          }
-          
-          // 现在可以安全地设置当前页面
-          setCurrentPage(pageFromUrl);
-        }
-      };
-
-      handleUrlPageChange();
+      initializeComponents();
     }, []); // 只在组件挂载时执行一次
 
     const handleSidebarToggle = () => {
