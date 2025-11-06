@@ -66,9 +66,9 @@
 
 ;; 更新模块数据
 (defn update-module-data! [module-key data]
-  (println "update-module-data! called with:" module-key data)
-  (println "Data type:" (type data))
-  (println "Is map?" (map? data))
+  ;(println "update-module-data! called with:" module-key data)
+  ;(println "Data type:" (type data))
+  ;(println "Is map?" (map? data))
   
   (let [processed-data (cond
                         ;; JavaScript对象转换
@@ -99,8 +99,9 @@
     (doseq [callback @data-subscribers]
       (when callback
         (callback module-key processed-data)))
-    (println "Module data after update:" (get @module-data module-key))
-    (println "Full module-data:" @module-data)))
+    ;(println "Module data after update:" (get @module-data module-key))
+    ;(println "Full module-data:" @module-data)
+    ))
 
 ;; 订阅数据变化
 (defn subscribe-to-data! [callback]

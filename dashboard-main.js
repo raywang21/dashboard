@@ -114,57 +114,98 @@ document.addEventListener('DOMContentLoaded', function() {
     },
   });
 
-  // Navigation items
-  const navigationItems = [
-    { text: '仪表板', icon: 'dashboard', page: 'dashboard' },
-    { text: '分析', icon: 'analytics', page: 'analysis' },
-    { text: '报告', icon: 'description', page: 'reports' },
-    { text: '用户', icon: 'people', page: 'users' },
-    { text: '设置', icon: 'settings', page: 'settings' },
-  ];
+  // 统一的页面配置
+  const pageConfig = {
+    'dashboard': {
+      text: '仪表板',
+      icon: 'dashboard',
+      file: 'dashboard-content',
+      componentName: 'DashboardContent'
+    },
+    'analysis': {
+      text: '分析',
+      icon: 'analytics',
+      file: 'stock-analysis',
+      componentName: 'StockAnalysis'
+    },
+    'reports': {
+      text: '报告',
+      icon: 'description',
+      file: 'reports',
+      componentName: 'Reports'
+    },
+    'users': {
+      text: '用户',
+      icon: 'people',
+      file: 'users',
+      componentName: 'Users'
+    },
+    'settings': {
+      text: '设置',
+      icon: 'settings',
+      file: 'settings',
+      componentName: 'Settings'
+    }
+  };
+
+  // Navigation items - 从pageConfig生成
+  const navigationItems = Object.entries(pageConfig).map(([pageId, config]) => ({
+    text: config.text,
+    icon: config.icon,
+    page: pageId
+  }));
 
   // 组件加载器 - 实现按需加载
   const componentLoader = {
     loadedComponents: new Set(),
     loadingComponents: new Set(),
     
-    async loadComponent(componentName) {
-      if (this.loadedComponents.has(componentName)) {
-        return window[componentName];
+    async loadComponent(pageId) {
+      if (this.loadedComponents.has(pageId)) {
+        return window[pageId];
       }
       
-      if (this.loadingComponents.has(componentName)) {
+      if (this.loadingComponents.has(pageId)) {
         // 如果正在加载，等待加载完成
-        return this.waitForComponent(componentName);
+        return this.waitForComponent(pageId);
       }
       
-      this.loadingComponents.add(componentName);
+      this.loadingComponents.add(pageId);
       
       try {
-        console.log(`Loading component: ${componentName}`);
+        console.log(`Loading component: ${pageId}`);
         
-        // 根据组件名找到对应的文件名
-        const fileName = this.getFileNameByComponent(componentName);
+        const config = pageConfig[pageId];
+        if (!config) {
+          throw new Error(`Page config not found for: ${pageId}`);
+        }
         
         // 动态导入组件文件
-        const module = await import(`./pages/${fileName}.js`);
+        const module = await import(`./pages/${config.file}.js`);
         
-        // 等待一小段时间确保组件注册到window
+        // 等待组件注册到window（组件文件内部会注册）
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        this.loadingComponents.delete(componentName);
-        this.loadedComponents.add(componentName);
+        // 使用配置中的实际组件名获取组件
+        const actualComponentName = config.componentName;
+        const component = window[actualComponentName];
         
-        if (window[componentName]) {
-          console.log(`Component loaded successfully: ${componentName}`);
-          return window[componentName];
-        } else {
-          console.error(`Component not found after loading: ${componentName}`);
-          return null;
+        if (!component) {
+          throw new Error(`Component ${actualComponentName} not found after loading`);
         }
+        
+        // 同时注册到两个地方，保持兼容性
+        window[pageId] = component;
+        window[actualComponentName] = component;
+        
+        this.loadingComponents.delete(pageId);
+        this.loadedComponents.add(pageId);
+        
+        console.log(`Component loaded successfully: ${pageId} (${actualComponentName})`);
+        return window[pageId];
       } catch (error) {
-        this.loadingComponents.delete(componentName);
-        console.error(`Failed to load component ${componentName}:`, error);
+        this.loadingComponents.delete(pageId);
+        console.error(`Failed to load component ${pageId}:`, error);
         return null;
       }
     },
@@ -202,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async preloadEssentialComponents() {
       console.log('Preloading essential components...');
       try {
-        await this.preloadComponent('DashboardContent');
+        await this.preloadComponent('dashboard');
         console.log('Essential components preloaded successfully');
       } catch (error) {
         console.error('Failed to preload essential components:', error);
@@ -214,49 +255,17 @@ document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const pageFromUrl = urlParams.get('page');
       
-      if (pageFromUrl && pageFromUrl !== 'dashboard') {
-        const componentName = this.getComponentName(pageFromUrl);
-        console.log(`Preloading component from URL: ${componentName}`);
+      if (pageFromUrl && pageFromUrl !== 'dashboard' && pageConfig[pageFromUrl]) {
+        console.log(`Preloading component from URL: ${pageFromUrl}`);
         try {
-          await this.preloadComponent(componentName);
-          console.log(`URL component preloaded: ${componentName}`);
+          await this.preloadComponent(pageFromUrl);
+          console.log(`URL component preloaded: ${pageFromUrl}`);
         } catch (error) {
-          console.error(`Failed to preload URL component: ${componentName}`, error);
+          console.error(`Failed to preload URL component: ${pageFromUrl}`, error);
         }
       }
     },
     
-    // 页面到组件名的映射（保持驼峰命名）
-    pageToComponent: {
-      'dashboard': 'DashboardContent',
-      'analysis': 'StockAnalysis',
-      'reports': 'Reports',
-      'users': 'Users',
-      'settings': 'Settings'
-    },
-    
-    // 页面到文件名的映射（使用实际文件名）
-    pageToFile: {
-      'dashboard': 'dashboard-content',
-      'analysis': 'stock-analysis',
-      'reports': 'reports',
-      'users': 'users',
-      'settings': 'settings'
-    },
-    
-    getComponentName(page) {
-      return this.pageToComponent[page] || 'DashboardContent';
-    },
-    
-    getFileNameByComponent(componentName) {
-      // 根据组件名找到对应的页面，然后获取文件名
-      for (const [page, comp] of Object.entries(this.pageToComponent)) {
-        if (comp === componentName) {
-          return this.pageToFile[page];
-        }
-      }
-      return 'dashboard-content'; // 默认返回
-    },
     
     // 检查组件是否正在加载
     isComponentLoading(componentName) {
@@ -364,16 +373,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const pageFromUrl = urlParams.get('page') || 'dashboard';
         
         if (pageFromUrl !== currentPage) {
-          const componentName = componentLoader.getComponentName(pageFromUrl);
-          
           // 如果组件还未加载，先加载组件
-          if (!componentLoader.loadedComponents.has(componentName)) {
+          if (!componentLoader.loadedComponents.has(pageFromUrl)) {
             setUrlPageLoading(true);
             try {
-              await componentLoader.loadComponent(componentName);
-              console.log(`URL page component loaded: ${componentName}`);
+              await componentLoader.loadComponent(pageFromUrl);
+              console.log(`URL page component loaded: ${pageFromUrl}`);
             } catch (error) {
-              console.error(`Failed to load URL page component: ${componentName}`, error);
+              console.error(`Failed to load URL page component: ${pageFromUrl}`, error);
             } finally {
               setUrlPageLoading(false);
             }
@@ -406,8 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
       setLoading(true);
       
       try {
-        const componentName = componentLoader.getComponentName(page);
-        await componentLoader.loadComponent(componentName);
+        await componentLoader.loadComponent(page);
         
         // 组件加载完成后再设置页面和更新URL
         setCurrentPage(page);
@@ -425,8 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 渲染当前页面内容
     const renderPageContent = () => {
-      const componentName = componentLoader.getComponentName(currentPage);
-      const Component = window[componentName];
+      const Component = window[currentPage];
       
       // 如果正在从URL加载页面，显示专门的加载状态
       if (urlPageLoading) {
@@ -477,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // 如果组件正在加载中，显示加载状态
-      if (componentLoader.isComponentLoading(componentName)) {
+      if (componentLoader.isComponentLoading(currentPage)) {
         return React.createElement(Box, { 
           display: "flex", 
           justifyContent: "center", 
@@ -496,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
               animation: 'spin 1s linear infinite' 
             } 
           }),
-          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `组件 ${componentName} 加载中...`)
+          React.createElement(Typography, { variant: "h6", color: "text.secondary" }, `页面 ${currentPage} 加载中...`)
         );
       }
       
@@ -587,9 +592,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.clojureBridge.clearAnalysisLogs();
               }
             },
-             // 使用统一的数据桥接函数，避免重复定义
+            // 使用统一的数据桥接函数，避免重复定义
             updateModuleData: dataBridge.updateModuleData,
-            getModuleData: dataBridge.getModuleData         
+            getModuleData: dataBridge.getModuleData   
           };
           console.log('Analysis componentCallbacks created:', componentCallbacks);
           console.log('componentCallbacks.updateModuleData type:', typeof componentCallbacks.updateModuleData);
