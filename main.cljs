@@ -56,13 +56,21 @@
 (defn js->clj-camelcase [js-obj]
   "将JavaScript对象转换为ClojureScript map，保持camelCase关键字"
   (when js-obj
-    (->> (js->clj js-obj :keywordize-keys false)
-         (map (fn [[k v]] [(keyword k) v]))
-         (into {}))))
+    (->> (js->clj js-obj :keywordize-keys true) 
+         )))
+
+;; ClojureScript对象转换函数 - 保持原键名格式
+(defn clj->js-camelcase [clj-data]
+  "将ClojureScript数据转换为JavaScript对象，保持原键名格式"
+  (when clj-data
+    (clj->js clj-data :keyword-fn identity)))
 
 ;; 获取模块数据
 (defn get-module-data [module-key]
-  (get @module-data module-key))
+  (let [clj-data (get @module-data module-key)]
+    (when clj-data
+      (clj->js-camelcase clj-data))))
+
 
 ;; 更新模块数据
 (defn update-module-data! [module-key data]
@@ -304,4 +312,5 @@
   @main/module-data
   (:analysis @main/module-data)
 
+  (get-module-data :analysis)
   )

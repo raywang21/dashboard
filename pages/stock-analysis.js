@@ -22,6 +22,9 @@ function StockAnalysis({ data = {} }) {
     LinearProgress
   } = window.MaterialUI;
 
+  // 调试日志：组件渲染时的数据状态
+  console.log('StockAnalysis component rendered with data:', data);
+
   // 从props获取数据，如果没有则使用默认数据
   const [isRunning, setIsRunning] = useState(data.isRunning || false);
   const [currentTask, setCurrentTask] = useState(data.currentTask || '无');
@@ -38,6 +41,28 @@ function StockAnalysis({ data = {} }) {
   });
 
   const runningTimeInterval = useRef(null);
+
+  // 同步外部数据到内部状态 - 日志数据
+  useEffect(() => {
+    if (data.logs && Array.isArray(data.logs)) {
+      console.log('External logs changed, syncing to internal state:', data.logs);
+      console.log('Current internal logs before sync:', logs);
+      setLogs(data.logs);
+    }
+  }, [data.logs]);
+
+  // 同步其他关键字段
+  useEffect(() => {
+    console.log('Syncing other data fields:', data);
+    if (data.isRunning !== undefined) setIsRunning(data.isRunning);
+    if (data.currentTask !== undefined) setCurrentTask(data.currentTask);
+    if (data.startTime !== undefined) setStartTime(data.startTime);
+    if (data.runningTime !== undefined) setRunningTime(data.runningTime);
+    if (data.stockCode !== undefined) setStockCode(data.stockCode);
+    if (data.queryResult !== undefined) setQueryResult(data.queryResult);
+    if (data.showResult !== undefined) setShowResult(data.showResult);
+    if (data.loading !== undefined) setLoading(data.loading);
+  }, [data]);
 
   // API communication functions - 从props获取或使用默认
   const callCljsFunc = data.callCljsFunc || async function(funcName, args = []) {
@@ -58,6 +83,9 @@ function StockAnalysis({ data = {} }) {
       type: type
     };
     
+    console.log('addLog called:', message, type);
+    
+    // 更新内部状态
     setLogs(prevLogs => {
       const newLogs = [...prevLogs, logEntry];
       // Keep logs under 100 entries
@@ -66,6 +94,12 @@ function StockAnalysis({ data = {} }) {
       }
       return newLogs;
     });
+    
+    // 同时同步到外部数据（如果可用）
+    if (window.clojureBridge && window.clojureBridge.addAnalysisLog) {
+      console.log('Syncing log to ClojureScript atom:', message, type);
+      window.clojureBridge.addAnalysisLog(message, type);
+    }
   };
 
   const clearLogs = data.clearLogs || function() {

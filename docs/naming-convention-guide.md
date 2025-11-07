@@ -2,27 +2,55 @@
 
 ## 📋 文档概述
 
-本文档定义了Dashboard项目中JavaScript与ClojureScript之间的统一命名约定，采用**数据层camelCase + 函数层kebab-case**的混合策略，确保代码可读性、API兼容性和开发效率的平衡。
+本文档定义了Dashboard项目中JavaScript与ClojureScript之间的统一命名约定，采用**保持原始格式 + 纯类型转换**的策略，确保数据完整性、API兼容性和开发效率的平衡。
 
 ## 🎯 核心原则
 
-### 1. 分层命名策略
-- **数据结构层**：统一使用camelCase
-- **函数定义层**：ClojureScript使用kebab-case，JavaScript使用camelCase
-- **局部变量层**：ClojureScript使用kebab-case，JavaScript使用camelCase
+### 1. 保持原始格式原则
+- **数据传递**：完全保持原始键名格式，不做任何命名转换
+- **类型转换**：只进行数据类型转换，不改变键名格式
+- **格式兼容**：支持camelCase、kebab-case、snake_case等所有格式
 
-### 2. 零转换原则
-- JavaScript与ClojureScript之间的数据传递无需命名转换
-- 与后端API的数据格式保持一致
-- 避免因转换导致的数据丢失和性能开销
+### 2. 纯类型转换原则
+- JavaScript对象 ↔ ClojureScript map：只转换数据类型
+- 键名格式：完全保持原样
+- 数据完整性：避免因转换导致的数据丢失
+
+### 3. 对称设计原则
+- `js->clj-camelcase`：JavaScript → ClojureScript，保持原键名
+- `clj->js-camelcase`：ClojureScript → JavaScript，保持原键名
+- 完全对称：两个方向的转换行为一致
+
+## 🔍 重要发现：转换函数的真实行为
+
+### 实际测试结果
+经过全面测试验证，转换函数的实际行为如下：
+
+```javascript
+// 测试数据
+const testData = {
+  userName: "张三",      // camelCase
+  user_age: 25,          // snake_case  
+  "last-login": "2024-01-15"  // kebab-case
+};
+
+// 通过 js->clj-camelcase 转换后
+// 结果：{:userName "张三", :user_age 25, :last-login "2024-01-15"}
+// 结论：完全保持原始键名格式！
+```
+
+### 关键认知更新
+- **函数命名误导**：`js->clj-camelcase` 中的 "camelcase" 是历史遗留命名
+- **实际功能**：纯类型转换器，保持所有原始键名格式
+- **设计原则**：对称转换 + 零命名修改
 
 ## 📝 详细规范
 
 ### 1. 数据结构命名规范
 
-#### JavaScript端
+#### 推荐实践：统一使用camelCase
 ```javascript
-// ✅ 正确：使用camelCase
+// ✅ 推荐：JavaScript端使用camelCase
 const analysisData = {
   stockData: {},
   queryResult: null,
@@ -38,18 +66,10 @@ const analysisData = {
     query: false
   }
 };
-
-// ❌ 错误：使用kebab-case
-const wrongData = {
-  "stock-data": {},
-  "query-result": null,
-  "show-result": false
-};
 ```
 
-#### ClojureScript端
 ```clojure
-;; ✅ 正确：数据结构使用camelCase关键字
+;; ✅ 推荐：ClojureScript端使用camelCase关键字
 (defonce module-data
   (r/atom {:analysis {:stockData {}
                        :queryResult nil
@@ -63,120 +83,34 @@ const wrongData = {
                                :stop false
                                :query false}}}))
 
-;; ❌ 错误：数据结构使用kebab-case
-(defonce wrong-data
-  (r/atom {:analysis {:stock-data {}
-                       :query-result nil}}))
+;; ✅ 也支持：其他格式也能正常工作
+(defonce mixed-format-data
+  (r/atom {:analysis {"stock-data" {}     ; kebab-case
+                       "query_result" nil   ; snake_case
+                       "showResult" false}})) ; camelCase
 ```
 
-### 2. 函数命名规范
+#### 重要说明
+- **推荐统一**：建议全项目统一使用camelCase以提高一致性
+- **兼容性**：转换函数支持所有格式，不会破坏现有代码
+- **渐进迁移**：可以逐步从其他格式迁移到camelCase
 
-#### JavaScript端
-```javascript
-// ✅ 正确：函数名使用camelCase
-function handleGetShareCapital() {
-  // 实现逻辑
-}
-
-const updateAnalysisData = (key, value) => {
-  // 实现逻辑
-};
-
-// ❌ 错误：函数名使用kebab-case
-function handle-get-share-capital() {
-  // 错误的命名方式
-}
-```
-
-#### ClojureScript端
-```clojure
-;; ✅ 正确：函数名使用kebab-case
-(defn get-analysis-data []
-  {:stockData (get-in @module-data [:analysis :stockData])
-   :queryResult (get-in @module-data [:analysis :queryResult])
-   :showResult (get-in @module-data [:analysis :showResult])})
-
-(defn update-analysis-data! [key value]
-  (let [current-data (get-in @module-data [:analysis])]
-    (update-module-data! :analysis (assoc current-data key value))))
-
-;; ❌ 错误：函数名使用camelCase
-(defn getAnalysisData []
-  ;; 错误的命名方式
-  )
-```
-
-### 3. 局部变量命名规范
-
-#### JavaScript端
-```javascript
-// ✅ 正确：局部变量使用camelCase
-function processAnalysisData() {
-  const queryResult = data.queryResult;
-  const showResult = data.showResult;
-  const stockCode = data.stockCode;
-  
-  // 处理逻辑
-}
-```
-
-#### ClojureScript端
-```clojure
-;; ✅ 正确：局部变量使用kebab-case
-(defn process-analysis-data []
-  (let [query-result (:queryResult analysis-data)
-        show-result (:showResult analysis-data)
-        stock-code (:stockCode analysis-data)]
-    ;; 处理逻辑
-    ))
-
-;; ❌ 错误：局部变量使用camelCase
-(defn process-analysis-data []
-  (let [queryResult (:queryResult analysis-data)]
-    ;; 虽然能工作，但不符合ClojureScript惯例
-    ))
-```
-
-### 4. 数据传递规范
+### 2. 转换函数实现规范
 
 #### JavaScript → ClojureScript
-```javascript
-// ✅ 正确：直接传递，无需转换
-const analysisData = {
-  queryResult: queryResultData,
-  showResult: true,
-  stockCode: stockCode
-};
-
-// 直接传递给ClojureScript
-data.updateModuleData('analysis', analysisData);
-
-// ❌ 错误：不必要的转换
-const convertedData = {
-  "query-result": queryResultData,
-  "show-result": true,
-  "stock-code": stockCode
-};
-data.updateModuleData('analysis', convertedData);
-```
-
-#### ClojureScript端JavaScript对象处理
 ```clojure
-;; ✅ 正确：使用专用转换函数，保持camelCase
+;; ✅ 正确实现：纯类型转换，保持原键名
 (defn js->clj-camelcase [js-obj]
-  "将JavaScript对象转换为ClojureScript map，保持camelCase关键字"
+  "将JavaScript对象转换为ClojureScript map，保持原始键名格式"
   (when js-obj
-    (->> (js->clj js-obj :keywordize-keys false)  ; 关键：设置为false
-         (map (fn [[k v]] [(keyword k) v]))
-         (into {}))))
+    (js->clj js-obj :keywordize-keys true)))
 
+;; 使用示例
 (defn update-module-data! [module-key data]
   (let [processed-data (cond
                         ;; JavaScript对象转换
-                        (and (exists? js/Object) (instance? js/Object data))
-                        (do
-                          (println "Converting JavaScript object to ClojureScript map")
-                          (js->clj-camelcase data))  ; 使用专用转换函数
+                        (instance? js/Object data)
+                        (js->clj-camelcase data)  ; 保持原键名
                         
                         ;; ClojureScript map直接使用
                         (map? data)
@@ -187,27 +121,52 @@ data.updateModuleData('analysis', convertedData);
                         data)]
     ;; 继续处理...
     ))
-
-;; ❌ 错误：使用 :keywordize-keys true 会破坏命名规范
-(defn wrong-conversion [data]
-  (js->clj data :keywordize-keys true))  ; 会将camelCase转换为kebab-case
 ```
 
 #### ClojureScript → JavaScript
 ```clojure
-;; ✅ 正确：直接返回camelCase数据
-(defn get-analysis-data []
-  {:queryResult (get-in @module-data [:analysis :queryResult])
-   :showResult (get-in @module-data [:analysis :showResult])
-   :stockCode (get-in @module-data [:analysis :stockCode])})
+;; ✅ 正确实现：纯类型转换，保持原键名
+(defn clj->js-camelcase [clj-data]
+  "将ClojureScript数据转换为JavaScript对象，保持原始键名格式"
+  (when clj-data
+    (clj->js clj-data :keyword-fn identity)))
 
-;; ❌ 错误：返回kebab-case数据
-(defn get-analysis-data []
-  {:query-result (get-in @module-data [:analysis :query-result])
-   :show-result (get-in @module-data [:analysis :show-result])})
+;; 在get-module-data中使用
+(defn get-module-data [module-key]
+  (let [clj-data (get @module-data module-key)]
+    (when clj-data
+      (clj->js-camelcase clj-data))))  ; 返回JavaScript对象
 ```
 
-### 5. API集成规范
+### 3. 数据传递规范
+
+#### JavaScript → ClojureScript
+```javascript
+// ✅ 正确：直接传递，无需命名转换
+const analysisData = {
+  queryResult: queryResultData,  // camelCase
+  show_result: true,           // snake_case (也支持)
+  "stock-code": stockCode        // kebab-case (也支持)
+};
+
+// 直接传递给ClojureScript
+data.updateModuleData('analysis', analysisData);
+
+// 转换结果：{:queryResult ..., :show_result true, :stock-code ...}
+// 所有键名格式都被完美保持！
+```
+
+#### ClojureScript → JavaScript
+```javascript
+// ✅ 正确：直接获取，已经是JavaScript对象
+const analysisData = data.getModuleData('analysis');
+
+// analysisData 格式与存储时完全一致
+// 如果存储时是camelCase，获取时就是camelCase
+// 如果存储时是kebab-case，获取时就是kebab-case
+```
+
+### 4. API集成规范
 
 #### 后端API对接
 ```javascript
@@ -222,20 +181,15 @@ const fetchAnalysisData = async (stockCode) => {
   return apiData;
 };
 
-// ❌ 错误：不必要的转换
-const fetchAnalysisDataWrong = async (stockCode) => {
-  const response = await fetch(`/api/stocks/${stockCode}/analysis`);
+// ✅ 也支持：API返回其他格式
+const fetchMixedFormatData = async (stockCode) => {
+  const response = await fetch(`/api/stocks/${stockCode}/mixed`);
   const apiData = await response.json();
+  // apiData格式: { "query_result": {...}, "show-result": true, "stock_code": "AAPL" }
   
-  // 不必要的转换
-  const convertedData = {
-    "query-result": apiData.queryResult,
-    "show-result": apiData.showResult,
-    "stock-code": apiData.stockCode
-  };
-  
-  data.updateModuleData('analysis', convertedData);
-  return convertedData;
+  // 同样直接传递，键名格式会被保持
+  data.updateModuleData('analysis', apiData);
+  return apiData;
 };
 ```
 
@@ -243,19 +197,26 @@ const fetchAnalysisDataWrong = async (stockCode) => {
 
 ### 1. 现有代码迁移步骤
 
-#### 步骤1：更新数据结构
+#### 步骤1：评估现状（可选）
 ```clojure
-;; 从kebab-case迁移到camelCase
-;; 之前：
-{:query-result nil :show-result false :stock-code ""}
+;; 检查当前数据格式
+(println @module-data)
+;; 如果发现混合格式，决定是否统一为camelCase
+```
 
-;; 之后：
+#### 步骤2：统一数据格式（推荐）
+```clojure
+;; 从混合格式迁移到统一的camelCase
+;; 之前（混合格式）：
+{:query-result nil :showResult false :stock_code ""}
+
+;; 之后（统一camelCase）：
 {:queryResult nil :showResult false :stockCode ""}
 ```
 
-#### 步骤2：更新数据访问代码
+#### 步骤3：更新数据访问代码
 ```clojure
-;; 更新所有数据访问点
+;; 更新所有数据访问点以匹配新的键名
 ;; 之前：
 (get-in @module-data [:analysis :query-result])
 
@@ -263,46 +224,38 @@ const fetchAnalysisDataWrong = async (stockCode) => {
 (get-in @module-data [:analysis :queryResult])
 ```
 
-#### 步骤3：移除转换逻辑
-```javascript
-// 移除所有不必要的转换代码
-// 删除类似这样的转换函数：
-function camelToKebab(str) { /* 删除 */ }
-function convertToKebabCase(obj) { /* 删除 */ }
-```
-
 ### 2. 代码审查检查点
 
 #### JavaScript代码审查清单
-- [ ] 数据对象使用camelCase命名
+- [ ] 数据对象推荐使用camelCase命名
 - [ ] 函数名使用camelCase命名
 - [ ] 局部变量使用camelCase命名
-- [ ] 与ClojureScript数据传递无转换
+- [ ] 与ClojureScript数据传递无命名转换
 - [ ] API数据直接使用，无格式转换
 
 #### ClojureScript代码审查清单
-- [ ] 数据结构使用camelCase关键字
+- [ ] 数据结构推荐使用camelCase关键字
 - [ ] 函数名使用kebab-case命名
 - [ ] 局部变量使用kebab-case命名
-- [ ] 数据访问使用camelCase关键字
-- [ ] JavaScript对象转换使用 `js->clj` 时设置 `:keywordize-keys false`
-- [ ] 使用专用的 `js->clj-camelcase` 函数处理JavaScript对象
-- [ ] 避免使用 `:keywordize-keys true` 破坏camelCase命名
+- [ ] 使用 `js->clj-camelcase` 处理JavaScript对象
+- [ ] 使用 `clj->js-camelcase` 返回JavaScript对象
+- [ ] 理解转换函数保持原键名格式的特性
 
-### 3. 工具配置
+### 3. 测试验证
 
-#### ESLint配置
-```json
-{
-  "rules": {
-    "camelcase": ["error", { "properties": "always" }]
-  }
-}
-```
+#### 转换函数测试
+```clojure
+;; 测试不同格式的数据转换
+(def test-data {:userName "张三" :user_age 25 "last-login" "2024-01-15"})
 
-#### Clj-kondo配置
-```clj
-{:linters {:naming {:patterns {defs "^[a-z][a-zA-Z0-9-]*$"}}}}
+;; 测试 clj->js-camelcase
+(println (clj->js-camelcase test-data))
+;; 期望：{userName: "张三", user_age: 25, "last-login": "2024-01-15"}
+
+;; 测试 js->clj-camelcase  
+(def js-test-data #js {:userName "张三" :user_age 25 "last-login" "2024-01-15"})
+(println (js->clj-camelcase js-test-data))
+;; 期望：{:userName "张三", :user_age 25, :last-login "2024-01-15"}
 ```
 
 ## 📚 最佳实践示例
@@ -319,14 +272,14 @@ function StockAnalysis({ data }) {
   const handleQuery = async () => {
     const result = await fetchStockData(stockCode);
     
-    // 直接使用API返回的camelCase数据
+    // 使用推荐的camelCase格式
     const updatedData = {
       queryResult: result,
       showResult: true,
       stockCode: stockCode
     };
     
-    // 直接传递给ClojureScript，无转换
+    // 直接传递给ClojureScript，无命名转换
     data.updateModuleData('analysis', updatedData);
     setQueryResult(result);
     setShowResult(true);
@@ -338,83 +291,117 @@ function StockAnalysis({ data }) {
 
 #### ClojureScript数据层
 ```clojure
-(defn get-analysis-data []
-  {:queryResult (get-in @module-data [:analysis :queryResult])
-   :showResult (get-in @module-data [:analysis :showResult])
-   :stockCode (get-in @module-data [:analysis :stockCode])})
+;; 推荐使用camelCase数据结构
+(defonce module-data
+  (r/atom {:analysis {:queryResult nil
+                       :showResult false
+                       :stockCode ""}}))
 
-(defn update-analysis-data! [key value]
-  (let [current-data (get-in @module-data [:analysis])]
-    (update-module-data! :analysis (assoc current-data key value))))
+;; 获取数据时自动转换为JavaScript对象
+(defn get-module-data [module-key]
+  (let [clj-data (get @module-data module-key)]
+    (when clj-data
+      (clj->js-camelcase clj-data))))
 
-(defn process-query-result [query-result]
-  (when query-result
-    (let [formatted-result (format-data query-result)]
-      (update-analysis-data! :queryResult formatted-result))))
+;; 更新数据时自动转换JavaScript对象
+(defn update-module-data! [module-key data]
+  (let [processed-data (cond
+                        (instance? js/Object data)
+                        (js->clj-camelcase data)  ; 保持原键名
+                        (map? data)
+                        data
+                        :else
+                        data)]
+    ;; 存储逻辑...
+    ))
 ```
 
 ## 🚀 迁移时间表
 
-### 第一阶段（1-2周）：数据结构标准化
-- [ ] 更新所有ClojureScript数据结构为camelCase
+### 第一阶段（1周）：理解与测试
+- [ ] 团队学习转换函数的真实行为
+- [ ] 运行测试验证现有代码兼容性
+- [ ] 确定数据格式统一策略
+
+### 第二阶段（1-2周）：数据格式统一（可选）
+- [ ] 评估是否需要统一为camelCase
+- [ ] 更新数据结构为推荐格式
 - [ ] 更新数据访问代码
 - [ ] 运行测试确保功能正常
 
-### 第二阶段（1周）：移除转换逻辑
-- [ ] 删除所有命名转换函数
-- [ ] 更新JavaScript组件，移除转换调用
-- [ ] 更新API集成代码
-
-### 第三阶段（1周）：工具和文档
-- [ ] 配置代码检查工具
+### 第三阶段（1周）：文档和培训
 - [ ] 更新开发文档
 - [ ] 团队培训和规范宣导
+- [ ] 建立代码审查检查点
 
 ## 📋 快速参考
 
-| 层面 | JavaScript | ClojureScript |
-|------|------------|---------------|
-| 数据结构 | camelCase | camelCase关键字 |
-| 函数名 | camelCase | kebab-case |
-| 局部变量 | camelCase | kebab-case |
-| API数据 | 直接使用 | 直接使用 |
-| 数据传递 | 无转换 | 无转换 |
+| 层面 | JavaScript | ClojureScript | 转换行为 |
+|------|------------|---------------|-----------|
+| 数据结构 | 推荐camelCase | 推荐camelCase关键字 | 保持原格式 |
+| 函数名 | camelCase | kebab-case | 不适用 |
+| 局部变量 | camelCase | kebab-case | 不适用 |
+| API数据 | 直接使用 | 直接使用 | 保持原格式 |
+| 数据传递 | 无命名转换 | 无命名转换 | 保持原格式 |
 
 ## 🎯 核心收益
 
-1. **零转换开销**：消除所有命名转换的性能损耗
-2. **API兼容性**：与标准REST API完美兼容
-3. **开发效率**：JavaScript开发者无学习成本
-4. **代码可读性**：保持各语言的最佳实践
+1. **数据完整性**：完全保持原始键名格式，零数据丢失
+2. **格式兼容性**：支持所有命名格式，向后兼容
+3. **性能优化**：纯类型转换，无额外命名转换开销
+4. **开发效率**：JavaScript开发者无学习成本
 5. **维护简化**：减少因转换导致的bug和调试复杂度
+6. **渐进迁移**：支持逐步统一到推荐格式
+
+## 🔍 重要认知更新
+
+### 转换函数的真实作用
+- **不是命名转换器**：不会将camelCase转换为kebab-case
+- **是类型转换器**：只进行JavaScript对象 ↔ ClojureScript map的转换
+- **保持原格式**：所有键名格式都被完美保持
+
+### 设计哲学
+- **保持优于转换**：保持原始格式比强制转换更安全
+- **兼容性优先**：支持多种格式，不破坏现有代码
+- **渐进改进**：推荐统一格式，但不强制要求
 
 ## 🔄 与现有文档的关系
 
-本规范是对 `js-clojurescript-data-bridge-guide.md` 的补充和标准化：
+本规范是对 `js-clojurescript-data-bridge-guide.md` 的重要更新：
 
-- **数据桥接指南**：专注于技术实现和问题解决
-- **命名规范指南**：专注于代码风格和开发规范
+- **数据桥接指南**：专注于技术实现细节
+- **命名规范指南**：基于实际测试结果的规范定义
 
-两个文档应该结合使用，确保技术实现和代码风格的一致性。
+两个文档应该结合使用，确保技术实现和代码规范的一致性。
 
 ## 📞 支持与反馈
 
 如果在实施过程中遇到问题或有改进建议，请：
 
 1. 查阅 `js-clojurescript-data-bridge-guide.md` 获取技术实现细节
-2. 在团队会议中讨论规范的实际应用效果
-3. 根据项目实际情况调整规范细节
+2. 使用转换测试页面验证转换行为
+3. 在团队会议中讨论规范的实际应用效果
+4. 根据项目实际情况调整规范细节
 
 ---
 
-**文档版本**: 1.1  
+**文档版本**: 2.0  
 **创建日期**: 2025-11-05  
-**更新日期**: 2025-11-05  
+**更新日期**: 2025-11-07  
 **适用范围**: Dashboard项目所有JavaScript和ClojureScript代码  
 **维护责任**: 全体开发团队  
 **相关文档**: [JavaScript与ClojureScript数据桥接指南](./js-clojurescript-data-bridge-guide.md)
 
 ## 📝 更新日志
+
+### v2.0 (2025-11-07) - 重大更新
+- 🔥 **重构**：基于实际测试结果完全重写核心原则
+- 🔥 **修正**：转换函数实际行为说明（保持原键名格式）
+- 🔥 **新增**：纯类型转换原则和对称设计原则
+- 🔥 **新增**：重要发现章节，澄清函数命名误导
+- 🔥 **新增**：格式兼容性说明，支持多种命名格式
+- 🔧 **优化**：实施指南，增加渐进迁移选项
+- 🔧 **优化**：最佳实践示例，反映真实转换行为
 
 ### v1.1 (2025-11-05)
 - 🔥 **新增**：ClojureScript端JavaScript对象处理的技术细节
@@ -426,4 +413,4 @@ function StockAnalysis({ data }) {
 ### v1.0 (2025-11-05)
 - 🎉 **初始版本**：建立完整的命名规范体系
 - 📋 **定义**：数据层camelCase + 函数层kebab-case的混合策略
-- 🔧 **实施**：详细的迁移指南和最佳实践
+- � **实施**：详细的迁移指南和最佳实践

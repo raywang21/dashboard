@@ -145,6 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
       icon: 'settings',
       file: 'settings',
       componentName: 'Settings'
+    },
+    'conversion-test': {
+      text: '转换测试',
+      icon: 'science',
+      file: 'conversion-test',
+      componentName: 'ConversionTest'
     }
   };
 
@@ -600,6 +606,17 @@ document.addEventListener('DOMContentLoaded', function() {
           console.log('componentCallbacks.updateModuleData type:', typeof componentCallbacks.updateModuleData);
           console.log('componentCallbacks.getModuleData type:', typeof componentCallbacks.getModuleData);
           break;
+
+        case 'conversion-test':
+          componentData = {};
+          componentCallbacks = {
+            // 转换测试页面需要访问数据桥接
+            updateModuleData: dataBridge.updateModuleData,
+            getModuleData: dataBridge.getModuleData
+          };
+          break;
+
+
       }
       // 根据页面类型只传递需要的回调函数
       switch (currentPage) {
@@ -643,6 +660,16 @@ document.addEventListener('DOMContentLoaded', function() {
               clearLogs: componentCallbacks.clearLogs
             }
           });
+    n'g
+        case 'conversion-test':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              updateModuleData: componentCallbacks.updateModuleData,
+              getModuleData: componentCallbacks.getModuleData
+            }
+          });
+
         default:
           return React.createElement(Component, { 
             data: componentData 
