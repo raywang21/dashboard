@@ -67,9 +67,11 @@
 
 ;; 获取模块数据
 (defn get-module-data [module-key]
-  (let [;; 优先使用关键字键，如果不存在则使用字符串键
-        clj-data (or (get @module-data (keyword module-key))
-                     (get @module-data module-key))]
+  ;; 确保module-key是关键字，与update-module-data!保持一致
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
+                      (keyword module-key))
+        clj-data (get @module-data keyword-key)]
     (when clj-data
       (clj->js-camelcase clj-data))))
 
