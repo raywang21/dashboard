@@ -31,7 +31,7 @@
                        :log-level "info"
                        :max-file-size 10
                        :cache-timeout 60}
-              :analysis {:stockData {}
+              :analysis {
                        :logs []
                        :isRunning false
                        :currentTask "无"
@@ -81,7 +81,11 @@
   ;(println "Data type:" (type data))
   ;(println "Is map?" (map? data))
   
-  (let [processed-data (cond
+  ;; 确保module-key是关键字，这样JavaScript字符串'analysis'会转换为关键字:analysis
+  (let [keyword-key (if (keyword? module-key) 
+                      module-key 
+                      (keyword module-key))
+        processed-data (cond
                         ;; JavaScript对象转换
                         (and (exists? js/Object) (instance? js/Object data))
                         (do
@@ -99,18 +103,18 @@
     (if (map? processed-data)
       ;; 如果processed-data是map，则合并更新
       (do
-        (println "Merging data for module:" module-key)
-        (swap! module-data update-in [module-key] merge processed-data))
+        (println "Merging data for module:" keyword-key)
+        (swap! module-data update-in [keyword-key] merge processed-data))
       ;; 如果processed-data不是map，则直接替换整个模块数据
       (do
-        (println "Replacing entire module data for:" module-key)
-        (swap! module-data assoc module-key processed-data)))
+        (println "Replacing entire module data for:" keyword-key)
+        (swap! module-data assoc keyword-key processed-data)))
     
     ;; 通知所有订阅者
     (doseq [callback @data-subscribers]
       (when callback
-        (callback module-key processed-data)))
-    ;(println "Module data after update:" (get @module-data module-key))
+        (callback keyword-key processed-data)))
+    ;(println "Module data after update:" (get @module-data keyword-key))
     ;(println "Full module-data:" @module-data)
     ))
 
@@ -315,5 +319,5 @@
   @main/module-data
   (:analysis @main/module-data)
 
-  (get-module-data :analysis)
+  (get-module-data "analysis")
   )
