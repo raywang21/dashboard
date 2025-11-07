@@ -79,46 +79,26 @@
 
 ;; 更新模块数据
 (defn update-module-data! [module-key data]
-  ;(println "update-module-data! called with:" module-key data)
-  ;(println "Data type:" (type data))
-  ;(println "Is map?" (map? data))
-  
-  ;; 确保module-key是关键字，这样JavaScript字符串'analysis'会转换为关键字:analysis
-  (let [keyword-key (if (keyword? module-key) 
-                      module-key 
+  (println "update-module-data! called with:" module-key data)
+  (println "Data type:" (type data))
+
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
                       (keyword module-key))
-        processed-data (cond
-                        ;; JavaScript对象转换
-                        (and (exists? js/Object) (instance? js/Object data))
-                        (do
-                          (println "Converting JavaScript object to ClojureScript map")
-                          (js->clj-camelcase data))
-                        
-                        ;; ClojureScript map直接使用
-                        (map? data)
-                        data
-                        
-                        ;; 其他情况保持原样
-                        :else
-                        data)]
-    
+        ;; 统一转换，确保所有 JavaScript 对象都被处理
+        processed-data (js->clj-camelcase data)]
+
+    (println "Processed data:" processed-data)
+
     (if (map? processed-data)
-      ;; 如果processed-data是map，则合并更新
-      (do
-        (println "Merging data for module:" keyword-key)
-        (swap! module-data update-in [keyword-key] merge processed-data))
-      ;; 如果processed-data不是map，则直接替换整个模块数据
-      (do
-        (println "Replacing entire module data for:" keyword-key)
-        (swap! module-data assoc keyword-key processed-data)))
-    
-    ;; 通知所有订阅者
+      (swap! module-data update-in [keyword-key] merge processed-data)
+      (swap! module-data assoc keyword-key processed-data))
+
+    ;; 通知订阅者
     (doseq [callback @data-subscribers]
       (when callback
-        (callback keyword-key processed-data)))
-    ;(println "Module data after update:" (get @module-data keyword-key))
-    ;(println "Full module-data:" @module-data)
-    ))
+        (callback keyword-key processed-data)))))
+
 
 ;; 订阅数据变化
 (defn subscribe-to-data! [callback]
@@ -316,4 +296,11 @@
   (:analysis @main/module-data)
 
   (get-module-data "analysis")
+
+  (update-dashboard-data! :stats [{:title "总用户数" :value "12,543" :change "+12%" :trend "up"}
+                                  {:title "活跃会话" :value "3,421" :change "+5%" :trend "up"}
+                                  {:title "转化率" :value "68.2%" :change "-2%" :trend "down"}
+                                  {:title "收入" :value "¥89,432" :change "+18%" :trend "up"}])
+
+  
   )

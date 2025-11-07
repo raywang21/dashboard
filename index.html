@@ -74,15 +74,7 @@
         // 等待Scittle和ClojureScript初始化
         setTimeout(function() {
           try {
-            // 初始化ClojureScript数据层
-            if (window.dashboard && window.dashboard.start) {
-              window.dashboard.start();
-              console.log('ClojureScript data layer initialized');
-            } else if (window.start) {
-              window.start();
-              console.log('ClojureScript started');
-            }
-            
+            // 初始化ClojureScript数据层            
             // 初始化桥接
             if (window.initBridge) {
               window.initBridge();
