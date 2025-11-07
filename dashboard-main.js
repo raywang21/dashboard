@@ -660,7 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
               clearLogs: componentCallbacks.clearLogs
             }
           });
-    n'g
+    
         case 'conversion-test':
           return React.createElement(Component, { 
             data: {
