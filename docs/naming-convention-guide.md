@@ -21,28 +21,67 @@
 - `clj->js-camelcase`：ClojureScript → JavaScript，保持原键名
 - 完全对称：两个方向的转换行为一致
 
-## 🔍 重要发现：转换函数的真实行为
+## 🔍 重要发现：转换函数的真实行为与演进
 
-### 实际测试结果
-经过全面测试验证，转换函数的实际行为如下：
+### 实际测试结果与问题发现
+经过全面测试和实际问题解决，转换函数的演进过程如下：
 
+#### 阶段1：初始实现的问题
 ```javascript
 // 测试数据
 const testData = {
-  userName: "张三",      // camelCase
-  user_age: 25,          // snake_case  
-  "last-login": "2024-01-15"  // kebab-case
+  queryResult: "some data",
+  showResult: true,
+  stockCode: "AAPL"
 };
 
-// 通过 js->clj-camelcase 转换后
-// 结果：{:userName "张三", :user_age 25, :last-login "2024-01-15"}
-// 结论：完全保持原始键名格式！
+// 初始转换结果
+// JavaScript → ClojureScript → JavaScript
+// {"queryResult": "some data"} → {:queryResult "some data"} → {":queryResult": "some data"}
+// 问题：键名格式不一致，出现冒号前缀
+```
+
+#### 阶段2：键名重复问题
+```clojure
+;; 更深层的问题：atom中出现重复键名
+{:analysis {:stockCode "", "stockCode" "AAPL", 
+            :startTime nil, "startTime" "2024-01-15T10:30:00Z",
+            :queryResult nil, "queryResult" "some data"}}
+;; 问题：同一字段同时存在关键字和字符串版本
+```
+
+#### 阶段3：最终解决方案
+```clojure
+;; 正确的转换函数实现
+(defn js-key->clj-key [js-key]
+  (keyword js-key))
+
+(defn clj-key->js-key [clj-key] 
+  (name clj-key))
+
+(defn js->clj-camelcase [js-obj]
+  (when js-obj
+    (let [converted (js->clj js-obj :keyword-fn js-key->clj-key)]
+      (walk/postwalk 
+        (fn [x]
+          (if (map? x)
+            (into {} (map (fn [[k v]] 
+                           [(if (string? k) (keyword k) k) v]) x))
+            x))
+        converted)))))
+
+;; 最终转换结果
+;; JavaScript → ClojureScript → JavaScript
+;; {"queryResult": "some data"} → {:queryResult "some data"} → {"queryResult": "some data"}
+;; 成功：键名格式完全一致！
 ```
 
 ### 关键认知更新
 - **函数命名误导**：`js->clj-camelcase` 中的 "camelcase" 是历史遗留命名
-- **实际功能**：纯类型转换器，保持所有原始键名格式
-- **设计原则**：对称转换 + 零命名修改
+- **实际功能**：需要递归处理的类型转换器，保持原始键名格式
+- **设计原则**：对称转换 + 递归处理 + 键名统一
+- **核心问题**：必须使用 `walk/postwalk` 确保嵌套对象的正确转换
+- **数据一致性**：在存储层统一使用关键字格式，避免键名重复
 
 ## 📝 详细规范
 
@@ -97,46 +136,74 @@ const analysisData = {
 
 ### 2. 转换函数实现规范
 
-#### JavaScript → ClojureScript
+#### 核心转换函数（最终解决方案）
 ```clojure
-;; ✅ 正确实现：纯类型转换，保持原键名
+;; 自定义键名转换函数
+(defn js-key->clj-key [js-key]
+  "将JavaScript键名转换为ClojureScript关键字"
+  (keyword js-key))
+
+(defn clj-key->js-key [clj-key] 
+  "将ClojureScript关键字转换为JavaScript键名"
+  (name clj-key))
+
+;; JavaScript → ClojureScript（递归处理）
 (defn js->clj-camelcase [js-obj]
-  "将JavaScript对象转换为ClojureScript map，保持原始键名格式"
+  "递归将JavaScript对象转换为ClojureScript map，统一使用关键字"
   (when js-obj
-    (js->clj js-obj :keywordize-keys true)))
+    (let [converted (js->clj js-obj :keyword-fn js-key->clj-key)]
+      (walk/postwalk 
+        (fn [x]
+          (if (map? x)
+            (into {} (map (fn [[k v]] 
+                           [(if (string? k) (keyword k) k) v]) x))
+            x))
+        converted)))))
 
-;; 使用示例
-(defn update-module-data! [module-key data]
-  (let [processed-data (cond
-                        ;; JavaScript对象转换
-                        (instance? js/Object data)
-                        (js->clj-camelcase data)  ; 保持原键名
-                        
-                        ;; ClojureScript map直接使用
-                        (map? data)
-                        data
-                        
-                        ;; 其他情况保持原样
-                        :else
-                        data)]
-    ;; 继续处理...
-    ))
-```
-
-#### ClojureScript → JavaScript
-```clojure
-;; ✅ 正确实现：纯类型转换，保持原键名
+;; ClojureScript → JavaScript（递归处理）
 (defn clj->js-camelcase [clj-data]
-  "将ClojureScript数据转换为JavaScript对象，保持原始键名格式"
+  "递归将ClojureScript数据转换为JavaScript对象"
   (when clj-data
-    (clj->js clj-data :keyword-fn identity)))
-
-;; 在get-module-data中使用
-(defn get-module-data [module-key]
-  (let [clj-data (get @module-data module-key)]
-    (when clj-data
-      (clj->js-camelcase clj-data))))  ; 返回JavaScript对象
+    (clj->js clj-data :keyword-fn clj-key->js-key)))
 ```
+
+#### 在数据管理函数中的使用
+```clojure
+;; 更新模块数据（避免键名重复）
+(defn update-module-data! [module-key data]
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
+                      (keyword module-key))
+        ;; 递归转换并统一键名格式
+        processed-data (js->clj-camelcase data)
+        ;; 清理现有数据，移除字符串键，避免重复
+        current-data (get @module-data keyword-key)
+        cleaned-data (into {} 
+                          (filter (fn [[k _]] (keyword? k)) current-data))]
+    
+    ;; 使用清理后的数据进行合并
+    (swap! module-data assoc keyword-key (merge cleaned-data processed-data))
+    
+    ;; 通知订阅者
+    (doseq [callback @data-subscribers]
+      (when callback
+        (callback keyword-key processed-data)))))
+
+;; 获取模块数据
+(defn get-module-data [module-key]
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
+                      (keyword module-key))
+        clj-data (get @module-data keyword-key)]
+    (when clj-data
+      (clj->js-camelcase clj-data))))
+```
+
+#### 关键实现要点
+1. **递归处理**：使用 `walk/postwalk` 确保所有嵌套层级都被正确处理
+2. **键名统一**：在存储层统一使用关键字格式，避免混合键名
+3. **避免重复**：在merge前清理现有数据，防止键名重复
+4. **对称转换**：两个方向的转换函数保持一致的转换逻辑
 
 ### 3. 数据传递规范
 
@@ -193,6 +260,81 @@ const fetchMixedFormatData = async (stockCode) => {
 };
 ```
 
+## 🎓 经验教训与最佳实践
+
+### 关键经验总结
+
+#### 1. 问题诊断要深入
+- **表面现象**：键名格式不一致，出现冒号前缀
+- **深层原因**：转换函数缺乏递归处理，导致嵌套对象转换不完整
+- **教训**：不要满足于表面修复，要追根溯源找到根本原因
+
+#### 2. 渐进式解决策略
+- **第一阶段**：解决表面键名格式问题（自定义转换函数）
+- **第二阶段**：发现并解决深层结构问题（键名重复）
+- **第三阶段**：实施完整的递归解决方案
+- **教训**：复杂问题需要分层解决，每个阶段都要验证效果
+
+#### 3. 数据一致性的核心地位
+- **存储层**：统一使用关键字格式，避免混合键名
+- **转换层**：处理格式转换逻辑，确保双向一致性
+- **接口层**：保持JavaScript兼容性
+- **教训**：明确各层职责，避免混合处理导致的数据混乱
+
+#### 4. 测试驱动的重要性
+- **多种测试用例**：纯camelCase、kebab-case、混合格式、嵌套对象、数组对象
+- **验证方法**：检查atom内部状态，而不仅仅是输出结果
+- **教训**：全面的测试能暴露隐藏的问题，确保修复的完整性
+
+#### 5. 递归处理的必要性
+- **问题**：简单的转换函数无法处理嵌套对象
+- **解决方案**：使用 `walk/postwalk` 递归遍历所有层级
+- **关键代码**：
+```clojure
+(walk/postwalk 
+  (fn [x]
+    (if (map? x)
+      (into {} (map (fn [[k v]] 
+                     [(if (string? k) (keyword k) k) v]) x))
+      x))
+  converted)
+```
+- **教训**：对于复杂的数据结构，递归处理是必需的
+
+#### 6. 键名重复的预防
+- **问题**：merge操作导致同一字段同时存在关键字和字符串版本
+- **解决方案**：在merge前清理现有数据，统一键名格式
+- **关键代码**：
+```clojure
+;; 清理现有数据，移除字符串键，避免重复
+current-data (get @module-data keyword-key)
+cleaned-data (into {} 
+                  (filter (fn [[k _]] (keyword? k)) current-data))
+```
+- **教训**：数据合并前必须确保键名格式的一致性
+
+### 最佳实践总结
+
+#### 1. 转换函数设计
+- **对称性**：两个方向的转换函数保持一致的逻辑
+- **递归性**：确保所有嵌套层级都被正确处理
+- **可测试性**：转换逻辑应该易于单独测试和验证
+
+#### 2. 数据结构管理
+- **统一格式**：在存储层统一使用关键字格式
+- **避免混合**：防止同一数据中存在不同格式的键名
+- **清理机制**：定期清理和验证数据结构的一致性
+
+#### 3. 错误处理和调试
+- **日志记录**：在转换过程中添加详细的调试日志
+- **状态检查**：定期检查atom内部的数据结构
+- **异常处理**：对异常键名格式进行适当的处理
+
+#### 4. 团队协作
+- **文档更新**：及时更新技术文档，反映最新的实现
+- **知识分享**：在团队中分享问题解决的经验和教训
+- **代码审查**：建立专门的检查点，确保转换逻辑的正确性
+
 ## 🔧 实施指南
 
 ### 1. 现有代码迁移步骤
@@ -240,6 +382,8 @@ const fetchMixedFormatData = async (stockCode) => {
 - [ ] 使用 `js->clj-camelcase` 处理JavaScript对象
 - [ ] 使用 `clj->js-camelcase` 返回JavaScript对象
 - [ ] 理解转换函数保持原键名格式的特性
+- [ ] 检查递归处理的正确性
+- [ ] 验证键名重复预防机制
 
 ### 3. 测试验证
 
@@ -256,6 +400,18 @@ const fetchMixedFormatData = async (stockCode) => {
 (def js-test-data #js {:userName "张三" :user_age 25 "last-login" "2024-01-15"})
 (println (js->clj-camelcase js-test-data))
 ;; 期望：{:userName "张三", :user_age 25, :last-login "2024-01-15"}
+```
+
+#### 嵌套对象测试
+```clojure
+;; 测试嵌套对象的递归转换
+(def nested-data {:outerData {:innerResult "nested camel"
+                            "inner-data" "nested kebab"
+                            :deepNested {:deepField "deep value"
+                                        "deep-field" "deep kebab"}}})
+
+;; 验证所有层级都被正确转换
+(println (clj->js-camelcase nested-data))
 ```
 
 ## 📚 最佳实践示例
@@ -299,21 +455,32 @@ function StockAnalysis({ data }) {
 
 ;; 获取数据时自动转换为JavaScript对象
 (defn get-module-data [module-key]
-  (let [clj-data (get @module-data module-key)]
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
+                      (keyword module-key))
+        clj-data (get @module-data keyword-key)]
     (when clj-data
       (clj->js-camelcase clj-data))))
 
 ;; 更新数据时自动转换JavaScript对象
 (defn update-module-data! [module-key data]
-  (let [processed-data (cond
-                        (instance? js/Object data)
-                        (js->clj-camelcase data)  ; 保持原键名
-                        (map? data)
-                        data
-                        :else
-                        data)]
-    ;; 存储逻辑...
-    ))
+  (let [keyword-key (if (keyword? module-key)
+                      module-key
+                      (keyword module-key))
+        ;; 递归转换并统一键名格式
+        processed-data (js->clj-camelcase data)
+        ;; 清理现有数据，移除字符串键，避免重复
+        current-data (get @module-data keyword-key)
+        cleaned-data (into {} 
+                          (filter (fn [[k _]] (keyword? k)) current-data))]
+    
+    ;; 使用清理后的数据进行合并
+    (swap! module-data assoc keyword-key (merge cleaned-data processed-data))
+    
+    ;; 通知订阅者
+    (doseq [callback @data-subscribers]
+      (when callback
+        (callback keyword-key processed-data)))))
 ```
 
 ## 🚀 迁移时间表
@@ -352,6 +519,7 @@ function StockAnalysis({ data }) {
 4. **开发效率**：JavaScript开发者无学习成本
 5. **维护简化**：减少因转换导致的bug和调试复杂度
 6. **渐进迁移**：支持逐步统一到推荐格式
+7. **问题预防**：通过经验总结避免类似问题的再次发生
 
 ## 🔍 重要认知更新
 
@@ -385,7 +553,7 @@ function StockAnalysis({ data }) {
 
 ---
 
-**文档版本**: 2.0  
+**文档版本**: 2.1  
 **创建日期**: 2025-11-05  
 **更新日期**: 2025-11-07  
 **适用范围**: Dashboard项目所有JavaScript和ClojureScript代码  
@@ -393,6 +561,16 @@ function StockAnalysis({ data }) {
 **相关文档**: [JavaScript与ClojureScript数据桥接指南](./js-clojurescript-data-bridge-guide.md)
 
 ## 📝 更新日志
+
+### v2.1 (2025-11-07) - 经验总结更新
+- 🔥 **新增**：完整的经验教训与最佳实践章节
+- 🔥 **新增**：问题诊断的深入分析方法
+- 🔥 **新增**：渐进式解决策略的详细说明
+- 🔥 **新增**：递归处理的必要性和实现细节
+- 🔥 **新增**：键名重复预防机制
+- 🔥 **新增**：团队协作和知识分享的最佳实践
+- 🔧 **优化**：代码审查检查点，增加转换逻辑验证
+- 🔧 **优化**：测试验证章节，增加嵌套对象测试
 
 ### v2.0 (2025-11-07) - 重大更新
 - 🔥 **重构**：基于实际测试结果完全重写核心原则
@@ -413,4 +591,4 @@ function StockAnalysis({ data }) {
 ### v1.0 (2025-11-05)
 - 🎉 **初始版本**：建立完整的命名规范体系
 - 📋 **定义**：数据层camelCase + 函数层kebab-case的混合策略
-- � **实施**：详细的迁移指南和最佳实践
+- 🚀 **实施**：详细的迁移指南和最佳实践

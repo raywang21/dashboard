@@ -52,18 +52,33 @@
 (defonce data-subscribers
   (r/atom []))
 
-;; JavaScript对象转换函数 - 保持camelCase命名
-(defn js->clj-camelcase [js-obj]
-  "将JavaScript对象转换为ClojureScript map，保持camelCase关键字"
-  (when js-obj
-    (->> (js->clj js-obj :keywordize-keys true) 
-         )))
+;; 自定义键名转换函数
+(defn js-key->clj-key [js-key]
+  (keyword js-key))
 
-;; ClojureScript对象转换函数 - 保持原键名格式
+(defn clj-key->js-key [clj-key]
+  (name clj-key))
+
+;; 递归转换JavaScript对象到ClojureScript
+(defn js->clj-camelcase [js-obj]
+  "递归将JavaScript对象转换为ClojureScript map，统一使用关键字"
+  (when js-obj
+    (let [converted (js->clj js-obj :keyword-fn js-key->clj-key)]
+      (walk/postwalk 
+        (fn [x]
+          (if (map? x)
+            (into {} (map (fn [[k v]] 
+                           [(if (string? k) (keyword k) k) v]) x))
+            x))
+        converted))))
+
+;; 递归转换ClojureScript到JavaScript
 (defn clj->js-camelcase [clj-data]
-  "将ClojureScript数据转换为JavaScript对象，保持原键名格式"
+  "递归将ClojureScript数据转换为JavaScript对象"
   (when clj-data
-    (clj->js clj-data :keyword-fn identity)))
+    (clj->js clj-data :keyword-fn clj-key->js-key)))
+
+
 
 ;; 获取模块数据
 (defn get-module-data [module-key]
@@ -301,6 +316,6 @@
                                   {:title "活跃会话" :value "3,421" :change "+5%" :trend "up"}
                                   {:title "转化率" :value "68.2%" :change "-2%" :trend "down"}
                                   {:title "收入" :value "¥89,432" :change "+18%" :trend "up"}])
+  (keyword "queryResult")
 
-  
   )
