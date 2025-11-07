@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
           await componentLoader.preloadEssentialComponents();
           
           // 智能预加载URL指定的组件
-          await componentLoader.preloadComponentFromUrl();
+          // await componentLoader.preloadComponentFromUrl();
           
           console.log('All components preloaded successfully');
         } catch (error) {

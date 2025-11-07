@@ -239,53 +239,47 @@
 ;; 初始化默认数据
 (defn ^:export init-default-data! []
   ;; 初始化仪表板数据
-  (update-dashboard-data! :stats [
-    {:title "总用户数" :value "12,543" :change "+12%" :trend "up"}
-    {:title "活跃会话" :value "3,421" :change "+5%" :trend "up"}
-    {:title "转化率" :value "68.2%" :change "-2%" :trend "down"}
-    {:title "收入" :value "¥89,432" :change "+18%" :trend "up"}])
-  
-  (update-dashboard-data! :activities [
-    {:id 1 :user "张三" :action "登录系统" :time "2分钟前" :status "success"}
-    {:id 2 :user "李四" :action "更新配置" :time "5分钟前" :status "info"}
-    {:id 3 :user "王五" :action "删除数据" :time "10分钟前" :status "warning"}
-    {:id 4 :user "赵六" :action "导出报告" :time "15分钟前" :status "success"}])
-  
-  (update-dashboard-data! :projects [
-    {:id 1 :name "项目 Alpha" :status "进行中" :progress 75 :owner "张三" :deadline "2024-01-15"}
-    {:id 2 :name "项目 Beta" :status "已完成" :progress 100 :owner "李四" :deadline "2024-01-10"}
-    {:id 3 :name "项目 Gamma" :status "待开始" :progress 0 :owner "王五" :deadline "2024-01-20"}
-    {:id 4 :name "项目 Delta" :status "进行中" :progress 45 :owner "赵六" :deadline "2024-01-25"}])
+  (update-dashboard-data! :stats [{:title "总用户数" :value "12,543" :change "+12%" :trend "up"}
+                                  {:title "活跃会话" :value "3,421" :change "+5%" :trend "up"}
+                                  {:title "转化率" :value "68.2%" :change "-2%" :trend "down"}
+                                  {:title "收入" :value "¥89,432" :change "+18%" :trend "up"}])
+
+  (update-dashboard-data! :activities [{:id 1 :user "张三" :action "登录系统" :time "2分钟前" :status "success"}
+                                       {:id 2 :user "李四" :action "更新配置" :time "5分钟前" :status "info"}
+                                       {:id 3 :user "王五" :action "删除数据" :time "10分钟前" :status "warning"}
+                                       {:id 4 :user "赵六" :action "导出报告" :time "15分钟前" :status "success"}])
+
+  (update-dashboard-data! :projects [{:id 1 :name "项目 Alpha" :status "进行中" :progress 75 :owner "张三" :deadline "2024-01-15"}
+                                     {:id 2 :name "项目 Beta" :status "已完成" :progress 100 :owner "李四" :deadline "2024-01-10"}
+                                     {:id 3 :name "项目 Gamma" :status "待开始" :progress 0 :owner "王五" :deadline "2024-01-20"}
+                                     {:id 4 :name "项目 Delta" :status "进行中" :progress 45 :owner "赵六" :deadline "2024-01-25"}])
 
   ;; 初始化报告数据
-  (update-reports-data! :report-list [
-    {:id 1 :name "月度销售报告" :type "销售" :date "2024-01-15" :status "已完成" :author "张三"}
-    {:id 2 :name "用户活跃度分析" :type "分析" :date "2024-01-14" :status "生成中" :author "李四"}
-    {:id 3 :name "财务季度报表" :type "财务" :date "2024-01-10" :status "已完成" :author "王五"}
-    {:id 4 :name "产品性能报告" :type "技术" :date "2024-01-08" :status "待审核" :author "赵六"}])
-  
-  (update-reports-data! :categories [
-    {:name "销售报告" :count 15 :icon "trending_up"}
-    {:name "用户分析" :count 8 :icon "people"}
-    {:name "财务报表" :count 12 :icon "account_balance"}
-    {:name "技术报告" :count 6 :icon "code"}])
+  (update-reports-data! :report-list [{:id 1 :name "月度销售报告" :type "销售" :date "2024-01-15" :status "已完成" :author "张三"}
+                                      {:id 2 :name "用户活跃度分析" :type "分析" :date "2024-01-14" :status "生成中" :author "李四"}
+                                      {:id 3 :name "财务季度报表" :type "财务" :date "2024-01-10" :status "已完成" :author "王五"}
+                                      {:id 4 :name "产品性能报告" :type "技术" :date "2024-01-08" :status "待审核" :author "赵六"}])
+
+  (update-reports-data! :categories [{:name "销售报告" :count 15 :icon "trending_up"}
+                                     {:name "用户分析" :count 8 :icon "people"}
+                                     {:name "财务报表" :count 12 :icon "account_balance"}
+                                     {:name "技术报告" :count 6 :icon "code"}])
 
   ;; 初始化用户数据
-  (update-users-data! :user-list [
-    {:id 1 :name "张三" :email "zhangsan@example.com" :role "管理员" :status "活跃" :lastLogin "2024-01-15 14:30" :avatar "Z"}
-    {:id 2 :name "李四" :email "lisi@example.com" :role "编辑" :status "活跃" :lastLogin "2024-01-15 10:15" :avatar "L"}
-    {:id 3 :name "王五" :email "wangwu@example.com" :role "用户" :status "离线" :lastLogin "2024-01-14 16:45" :avatar "W"}
-    {:id 4 :name "赵六" :email "zhaoliu@example.com" :role "编辑" :status "活跃" :lastLogin "2024-01-15 09:20" :avatar "Z"}
-    {:id 5 :name "钱七" :email "qianqi@example.com" :role "用户" :status "暂停" :lastLogin "2024-01-12 11:30" :avatar "Q"}])
-  
-  (update-users-data! :stats [
-    {:label "总用户数" :value "156" :change "+12%" :icon "people"}
-    {:label "活跃用户" :value "89" :change "+5%" :icon "person"}
-    {:label "新用户" :value "23" :change "+18%" :icon "person_add"}
-    {:label "在线用户" :value "34" :change "+8%" :icon "online_prediction"}])
+  (update-users-data! :user-list [{:id 1 :name "张三" :email "zhangsan@example.com" :role "管理员" :status "活跃" :lastLogin "2024-01-15 14:30" :avatar "Z"}
+                                  {:id 2 :name "李四" :email "lisi@example.com" :role "编辑" :status "活跃" :lastLogin "2024-01-15 10:15" :avatar "L"}
+                                  {:id 3 :name "王五" :email "wangwu@example.com" :role "用户" :status "离线" :lastLogin "2024-01-14 16:45" :avatar "W"}
+                                  {:id 4 :name "赵六" :email "zhaoliu@example.com" :role "编辑" :status "活跃" :lastLogin "2024-01-15 09:20" :avatar "Z"}
+                                  {:id 5 :name "钱七" :email "qianqi@example.com" :role "用户" :status "暂停" :lastLogin "2024-01-12 11:30" :avatar "Q"}])
+
+  (update-users-data! :stats [{:label "总用户数" :value "156" :change "+12%" :icon "people"}
+                              {:label "活跃用户" :value "89" :change "+5%" :icon "person"}
+                              {:label "新用户" :value "23" :change "+18%" :icon "person_add"}
+                              {:label "在线用户" :value "34" :change "+8%" :icon "online_prediction"}])
 
   ;; 初始化分析数据
-  (add-analysis-log! "系统已就绪，等待操作..." "info"))
+  ; (add-analysis-log! "系统已就绪，等待操作..." "info")
+  )
 
 ;; 主应用组件
 (defn dashboard-app []
