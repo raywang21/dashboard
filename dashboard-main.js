@@ -588,16 +588,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return { success: false, error: error.message };
               }
             },
-            addLog: (message, type) => {
-              if (window.clojureBridge && window.clojureBridge.addAnalysisLog) {
-                window.clojureBridge.addAnalysisLog(message, type);
-              }
-            },
-            clearLogs: () => {
-              if (window.clojureBridge && window.clojureBridge.clearAnalysisLogs) {
-                window.clojureBridge.clearAnalysisLogs();
-              }
-            },
+            
+            
             // 使用统一的数据桥接函数，避免重复定义
             updateModuleData: dataBridge.updateModuleData,
             getModuleData: dataBridge.getModuleData   
@@ -655,9 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
               ...componentData,
               updateModuleData: componentCallbacks.updateModuleData,
               getModuleData: componentCallbacks.getModuleData,
-              callCljsFunc: componentCallbacks.callCljsFunc,
-              addLog: componentCallbacks.addLog,
-              clearLogs: componentCallbacks.clearLogs
+              callCljsFunc: componentCallbacks.callCljsFunc
             }
           });
     

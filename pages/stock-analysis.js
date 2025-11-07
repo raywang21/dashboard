@@ -42,15 +42,6 @@ function StockAnalysis({ data = {} }) {
 
   const runningTimeInterval = useRef(null);
 
-  // 同步外部数据到内部状态 - 日志数据
-  useEffect(() => {
-    if (data.logs && Array.isArray(data.logs)) {
-      console.log('External logs changed, syncing to internal state:', data.logs);
-      console.log('Current internal logs before sync:', logs);
-      setLogs(data.logs);
-    }
-  }, [data.logs]);
-
   // 同步其他关键字段
   useEffect(() => {
     console.log('Syncing other data fields:', data);
@@ -74,38 +65,36 @@ function StockAnalysis({ data = {} }) {
     return res.json();
   };
 
-  // Log management - 从props获取回调或使用默认
-  const addLog = data.addLog || function(message, type = 'info') {
-    const timestamp = new Date().toLocaleTimeString('zh-CN');
-    const logEntry = {
-      time: timestamp,
-      message: message,
-      type: type
-    };
-    
-    console.log('addLog called:', message, type);
-    
-    // 更新内部状态
-    setLogs(prevLogs => {
-      const newLogs = [...prevLogs, logEntry];
-      // Keep logs under 100 entries
-      if (newLogs.length > 100) {
-        return newLogs.slice(-100);
-      }
-      return newLogs;
-    });
-    
-    // 同时同步到外部数据（如果可用）
-    if (window.clojureBridge && window.clojureBridge.addAnalysisLog) {
-      console.log('Syncing log to ClojureScript atom:', message, type);
-      window.clojureBridge.addAnalysisLog(message, type);
+  // Log management - 完全基于本地状态
+const addLog = data.addLog || function(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString('zh-CN');
+  const logEntry = {
+    time: timestamp,
+    message: message,
+    type: type
+  };
+  
+  console.log('addLog called:', message, type);
+  
+  // 只更新本地状态，确保日志立即显示
+  setLogs(prevLogs => {
+    const newLogs = [...prevLogs, logEntry];
+    // Keep logs under 100 entries
+    if (newLogs.length > 100) {
+      return newLogs.slice(-100);
     }
+    return newLogs;
+    });
   };
 
-  const clearLogs = data.clearLogs || function() {
-    setLogs([]);
-    addLog('日志已清空', 'info');
-  };
+
+const clearLogs = data.clearLogs || function() {
+  // 只清除本地状态
+  setLogs([]);
+  // 可选：添加清空确认消息
+  // addLog('日志已清空', 'info');
+};
+
 
   // Running time counter
   const startRunningTimeCounter = data.startRunningTimeCounter || function() {
@@ -377,10 +366,6 @@ function StockAnalysis({ data = {} }) {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Initialize with welcome message
-  useEffect(() => {
-    addLog('系统已就绪，等待操作...', 'info');
-  }, []);
 
   // Render functions
   function renderLogEntry(log, index) {
