@@ -74,6 +74,21 @@ const testData = {
 ;; JavaScript → ClojureScript → JavaScript
 ;; {"queryResult": "some data"} → {:queryResult "some data"} → {"queryResult": "some data"}
 ;; 成功：键名格式完全一致！
+```clojure
+可以采用更简单的方法，实现完全相同的效果：
+;; JavaScript对象转换函数 - 保持camelCase命名
+(defn js->clj-camelcase [js-obj]
+  "将JavaScript对象转换为ClojureScript map，保持camelCase关键字"
+  (when js-obj
+    (->> (js->clj js-obj :keywordize-keys true) 
+         )))
+; :keywordize-keys true，把字符串原样转换为keyword
+
+(defn clj->js-camelcase [clj-data]
+  "递归将ClojureScript数据转换为JavaScript对象"
+  (when clj-data
+    (clj->js clj-data :keyword-fn #(name %))))
+; :keyword-fn #(name %)，把keyword原样转换为字符串
 ```
 
 ### 关键认知更新
