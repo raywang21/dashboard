@@ -535,8 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
           componentData = moduleData.dashboard || {};
           componentCallbacks = {
             onStatsUpdate: (stats) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, stats }),
-            onActivitiesUpdate: (act
-              ivities) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, activities })
+            onActivitiesUpdate: (activities) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, activities })
           };
           break;
         case 'reports':
