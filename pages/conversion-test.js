@@ -106,7 +106,7 @@ ConversionTest.Component = function() {
     try {
       // 获取转换前的数据
       const beforeData = window.clojureBridge?.getModuleData ? window.clojureBridge.getModuleData('analysis') : {};
-      addLog(`转换前模块数据: ${JSON.stringify(beforeData, null, 2)}`);
+      addLog(`调用getModuleData('analysis')查看转换前模块数据: ${JSON.stringify(beforeData, null, 2)}`);
 
       // 执行转换
       if (window.clojureBridge && window.clojureBridge.updateModuleData) {
@@ -120,11 +120,11 @@ ConversionTest.Component = function() {
       // 获取转换后的数据
       setTimeout(() => {
         const afterData = window.clojureBridge?.getModuleData ? window.clojureBridge.getModuleData('analysis') : {};
-        addLog(`转换后模块数据: ${JSON.stringify(afterData, null, 2)}`);
+        addLog(`调用getModuleData('analysis')查看转换后模块数据: ${JSON.stringify(afterData, null, 2)}`);
         
         // 额外的 getModuleData 调用测试
-        const extraData = window.clojureBridge?.getModuleData ? window.clojureBridge.getModuleData('analysis') : {};
-        addLog(`额外调用 getModuleData 结果: ${JSON.stringify(extraData, null, 2)}`);
+        //const extraData = window.clojureBridge?.getModuleData ? window.clojureBridge.getModuleData('analysis') : {};
+        //addLog(`额外调用 getModuleData 结果: ${JSON.stringify(extraData, null, 2)}`);
         
         addLog(`--- 测试完成 ---`);
         setLoading(false);

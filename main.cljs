@@ -180,19 +180,6 @@
     (update-module-data! :analysis (assoc current-data keyword-key value))
     (println "Updated analysis data:" (get-in @module-data [:analysis]))))
 
-;; 添加日志到分析模块
-(defn add-analysis-log! [message type]
-  (let [timestamp (.toLocaleTimeString (js/Date.) "zh-CN")
-        new-log {:time timestamp
-                 :message message
-                 :type type}
-        current-logs (get-in @module-data [:analysis :logs])]
-    (update-analysis-data! :logs (conj current-logs new-log))))
-
-;; 清空分析日志
-(defn clear-analysis-logs! []
-  (update-analysis-data! :logs [])
-  (add-analysis-log! "日志已清空" "info"))
 
 ;; 初始化桥接接口 - 暴露给JavaScript使用
 (defn ^:export init-bridge! []
@@ -200,21 +187,7 @@
     #js {:getModuleData get-module-data
           :updateModuleData update-module-data!
           :subscribeToData subscribe-to-data!
-          :unsubscribeFromData unsubscribe-from-data!
-          :componentLoaded component-loaded?
-          :markComponentLoaded mark-component-loaded!
-          :getDashboardData get-dashboard-data
-          :updateDashboardData update-dashboard-data!
-          :getReportsData get-reports-data
-          :updateReportsData update-reports-data!
-          :getUsersData get-users-data
-          :updateUsersData update-users-data!
-          :getSettingsData get-settings-data
-          :updateSettingsData update-settings-data!
-          :getAnalysisData get-analysis-data
-          :updateAnalysisData update-analysis-data!
-          :addAnalysisLog add-analysis-log!
-          :clearAnalysisLogs clear-analysis-logs!}))
+          }))
 
 ;; 初始化默认数据
 (defn ^:export init-default-data! []
@@ -269,12 +242,6 @@
        ;; 这里可以添加全局UI元素
        ])))
 
-;; 启动应用
-(defn ^:export start! []
-  (init-default-data!)
-  (init-bridge!)
-  ;(dom/render [dashboard-app] (.getElementById js/document "app"))
-  )
 
 ;; 开发环境下的热重载
 (when (exists? js/window.location)
@@ -287,7 +254,6 @@
 ;; 全局导出函数 - 确保JavaScript可以访问
 (set! (.-initBridge js/window) init-bridge!)
 (set! (.-initDefaultData js/window) init-default-data!)
-(set! (.-start js/window) start!)
 
 (println "main.cljs loaded.")
 
