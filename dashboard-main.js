@@ -122,6 +122,12 @@ document.addEventListener('DOMContentLoaded', function() {
       file: 'dashboard-content',
       componentName: 'DashboardContent'
     },
+    'workflow': {
+      text: '工作流',
+      icon: 'account_tree',
+      file: 'workflow-builder',
+      componentName: 'WorkflowBuilder'
+    },
     'analysis': {
       text: '分析',
       icon: 'analytics',
@@ -272,7 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     },
     
-    
     // 检查组件是否正在加载
     isComponentLoading(componentName) {
       return this.loadingComponents.has(componentName);
@@ -342,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 初始化各模块数据
       const initialData = {
         dashboard: dataBridge.getModuleData('dashboard'),
+        workflow: dataBridge.getModuleData('workflow'),
         reports: dataBridge.getModuleData('reports'),
         users: dataBridge.getModuleData('users'),
         settings: dataBridge.getModuleData('settings'),
@@ -359,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
           await componentLoader.preloadEssentialComponents();
           
           // 智能预加载URL指定的组件
-          // await componentLoader.preloadComponentFromUrl();
+          await componentLoader.preloadComponentFromUrl();
           
           console.log('All components preloaded successfully');
         } catch (error) {
@@ -538,6 +544,14 @@ document.addEventListener('DOMContentLoaded', function() {
             onActivitiesUpdate: (activities) => dataBridge.updateModuleData('dashboard', { ...moduleData.dashboard, activities })
           };
           break;
+        case 'workflow':
+          componentData = moduleData.workflow || {};
+          componentCallbacks = {
+            // 工作流页面需要访问数据桥接
+            updateModuleData: dataBridge.updateModuleData,
+            getModuleData: dataBridge.getModuleData
+          };
+          break;
         case 'reports':
           componentData = moduleData.reports || {};
           componentCallbacks = {
@@ -589,7 +603,6 @@ document.addEventListener('DOMContentLoaded', function() {
               }
             },
             
-            
             // 使用统一的数据桥接函数，避免重复定义
             updateModuleData: dataBridge.updateModuleData,
             getModuleData: dataBridge.getModuleData   
@@ -608,8 +621,11 @@ document.addEventListener('DOMContentLoaded', function() {
           };
           break;
 
-
+        default:
+          componentData = {};
+          componentCallbacks = {};
       }
+      
       // 根据页面类型只传递需要的回调函数
       switch (currentPage) {
         case 'dashboard':
@@ -618,6 +634,14 @@ document.addEventListener('DOMContentLoaded', function() {
               ...componentData,
               onStatsUpdate: componentCallbacks.onStatsUpdate,
               onActivitiesUpdate: componentCallbacks.onActivitiesUpdate
+            }
+          });
+        case 'workflow':
+          return React.createElement(Component, { 
+            data: {
+              ...componentData,
+              updateModuleData: componentCallbacks.updateModuleData,
+              getModuleData: componentCallbacks.getModuleData
             }
           });
         case 'reports':
@@ -650,7 +674,6 @@ document.addEventListener('DOMContentLoaded', function() {
               callCljsFunc: componentCallbacks.callCljsFunc
             }
           });
-    
         case 'conversion-test':
           return React.createElement(Component, { 
             data: {
@@ -659,13 +682,11 @@ document.addEventListener('DOMContentLoaded', function() {
               getModuleData: componentCallbacks.getModuleData
             }
           });
-
         default:
           return React.createElement(Component, { 
             data: componentData 
           });
       }
-  
     };
 
     // Get page title for header

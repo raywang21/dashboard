@@ -42,7 +42,12 @@
                        :showResult false
                        :loading {:start false
                                :stop false
-                               :query false}}}))
+                               :query false}}
+              :workflow {:workflows []
+                        :current-workflow nil
+                        :execution-history []
+                        :node-templates {}
+                        :workflow-stats {}}}))
 
 ;; 组件加载状态跟踪
 (defonce loaded-components
@@ -179,6 +184,40 @@
     (println "Updating key:" keyword-key "with value:" value)
     (update-module-data! :analysis (assoc current-data keyword-key value))
     (println "Updated analysis data:" (get-in @module-data [:analysis]))))
+
+;; 工作流相关函数
+;; 获取工作流数据
+(defn get-workflow-data []
+  {:workflows (get-in @module-data [:workflow :workflows])
+   :current-workflow (get-in @module-data [:workflow :current-workflow])
+   :execution-history (get-in @module-data [:workflow :execution-history])
+   :node-templates (get-in @module-data [:workflow :node-templates])
+   :workflow-stats (get-in @module-data [:workflow :workflow-stats])})
+
+;; 更新工作流数据
+(defn update-workflow-data! [key value]
+  (let [current-data (get-in @module-data [:workflow])]
+    (update-module-data! :workflow (assoc current-data key value))))
+
+;; 保存工作流
+(defn save-workflow! [workflow-data]
+  (let [current-workflows (get-in @module-data [:workflow :workflows])
+        updated-workflows (conj current-workflows workflow-data)]
+    (update-workflow-data! :workflows updated-workflows)))
+
+;; 获取当前工作流
+(defn get-current-workflow []
+  (get-in @module-data [:workflow :current-workflow]))
+
+;; 设置当前工作流
+(defn set-current-workflow! [workflow]
+  (update-workflow-data! :current-workflow workflow))
+
+;; 添加工作流执行历史
+(defn add-workflow-execution! [execution-record]
+  (let [current-history (get-in @module-data [:workflow :execution-history])
+        updated-history (conj current-history execution-record)]
+    (update-workflow-data! :execution-history updated-history)))
 
 
 ;; 初始化桥接接口 - 暴露给JavaScript使用
