@@ -12,28 +12,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   console.log('MaterialUI found:', window.MaterialUI);
 
-  const { useState, useEffect } = React;
-  const { 
-    ThemeProvider, 
-    createTheme,
-    CssBaseline,
-    AppBar,
-    Toolbar,
-    Typography,
-    IconButton,
-    Drawer,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Box,
-    Avatar,
-    Menu,
-    MenuItem,
-    useTheme,
-    useMediaQuery,
-    Divider
-  } = window.MaterialUI;
+  // React hooks直接从React对象获取
+  const useState = React.useState;
+  const useEffect = React.useEffect;
+  
+  // Material-UI组件分别获取
+  const ThemeProvider = window.MaterialUI.ThemeProvider;
+  const createTheme = window.MaterialUI.createTheme;
+  const CssBaseline = window.MaterialUI.CssBaseline;
+  const AppBar = window.MaterialUI.AppBar;
+  const Toolbar = window.MaterialUI.Toolbar;
+  const Typography = window.MaterialUI.Typography;
+  const IconButton = window.MaterialUI.IconButton;
+  const Drawer = window.MaterialUI.Drawer;
+  const List = window.MaterialUI.List;
+  const ListItem = window.MaterialUI.ListItem;
+  const ListItemIcon = window.MaterialUI.ListItemIcon;
+  const ListItemText = window.MaterialUI.ListItemText;
+  const Box = window.MaterialUI.Box;
+  const Avatar = window.MaterialUI.Avatar;
+  const Menu = window.MaterialUI.Menu;
+  const MenuItem = window.MaterialUI.MenuItem;
+  const useTheme = window.MaterialUI.useTheme;
+  const useMediaQuery = window.MaterialUI.useMediaQuery;
+  const Divider = window.MaterialUI.Divider;
 
   // Material Design 3 Theme
   const theme = createTheme({
@@ -725,7 +727,13 @@ document.addEventListener('DOMContentLoaded', function() {
             edge: "start",
             sx: {
               marginRight: 2,
-              ...(sidebarOpen && !isMobile && { display: 'none' }),
+              // 移除隐藏逻辑，确保菜单按钮始终可见
+              // ...(sidebarOpen && !isMobile && { display: 'none' }),
+              zIndex: 1300, // 确保在最高层级
+              backgroundColor: 'rgba(255, 255, 255, 0.1)', // 添加背景增强可见性
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
+              }
             }
           },
             React.createElement('span', { className: "material-icons" }, "menu")

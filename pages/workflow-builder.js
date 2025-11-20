@@ -458,37 +458,48 @@ function WorkflowBuilder({ data = {} }) {
     });
   }, [selectedNode, nodes, currentWorkflow, updateModuleData]);
 
-  // 工具栏组件
+  // 工具栏组件 - 使用Box而不是AppBar避免冲突
   const WorkflowToolbar = () => {
-    return React.createElement(AppBar, { position: 'static', color: 'default', elevation: 1 },
-      React.createElement(Toolbar, null,
-        React.createElement(Button, {
-          variant: 'contained',
-          startIcon: React.createElement('span', { className: 'material-icons' }, 'add'),
-          onClick: handleNewWorkflow,
-          sx: { mr: 2 }
-        }, '新建'),
-        React.createElement(Button, {
-          variant: 'outlined',
-          startIcon: React.createElement('span', { className: 'material-icons' }, 'save'),
-          onClick: handleSaveWorkflow,
-          sx: { mr: 2 }
-        }, '保存'),
-        React.createElement(Button, {
-          variant: 'outlined',
-          startIcon: React.createElement('span', { className: 'material-icons' }, 'play_arrow'),
-          onClick: handleRunWorkflow,
-          sx: { mr: 2 }
-        }, '运行'),
-        React.createElement(Button, {
-          variant: 'outlined',
-          startIcon: React.createElement('span', { className: 'material-icons' }, 'bug_report'),
-          onClick: handleDebugWorkflow,
-          sx: { mr: 2 }
-        }, '调试'),
-        React.createElement(Box, { sx: { flexGrow: 1 } }),
-        React.createElement(Typography, { variant: 'h6' }, workflowName)
-      )
+    return React.createElement(Box, {
+      sx: {
+        backgroundColor: '#f5f5f5',
+        borderBottom: '1px solid #e0e0e0',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1
+      }
+    },
+      React.createElement(Button, {
+        variant: 'contained',
+        size: 'small',
+        startIcon: React.createElement('span', { className: 'material-icons' }, 'add'),
+        onClick: handleNewWorkflow,
+        sx: { mr: 1 }
+      }, '新建'),
+      React.createElement(Button, {
+        variant: 'outlined',
+        size: 'small',
+        startIcon: React.createElement('span', { className: 'material-icons' }, 'save'),
+        onClick: handleSaveWorkflow,
+        sx: { mr: 1 }
+      }, '保存'),
+      React.createElement(Button, {
+        variant: 'outlined',
+        size: 'small',
+        startIcon: React.createElement('span', { className: 'material-icons' }, 'play_arrow'),
+        onClick: handleRunWorkflow,
+        sx: { mr: 1 }
+      }, '运行'),
+      React.createElement(Button, {
+        variant: 'outlined',
+        size: 'small',
+        startIcon: React.createElement('span', { className: 'material-icons' }, 'bug_report'),
+        onClick: handleDebugWorkflow,
+        sx: { mr: 1 }
+      }, '调试'),
+      React.createElement(Box, { sx: { flexGrow: 1 } }),
+      React.createElement(Typography, { variant: 'h6', color: 'text.secondary' }, workflowName)
     );
   };
 

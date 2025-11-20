@@ -183,6 +183,25 @@ body {
   backdrop-filter: blur(10px);
 }
 
+/* 确保菜单按钮始终可见 */
+.MuiIconButton-root {
+  position: relative !important;
+  z-index: 1300 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+.MuiIconButton-root:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.MuiIconButton-root .material-icons {
+  color: white !important;
+  font-size: 20px !important;
+}
+
 /* Enhanced Table Styles */
 .MuiTableHead-root .MuiTableCell-root {
   font-weight: 600;
